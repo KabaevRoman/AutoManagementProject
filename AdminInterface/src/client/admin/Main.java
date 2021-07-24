@@ -1,15 +1,17 @@
 package client.admin;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
 import java.io.IOException;
 
 
@@ -66,13 +68,37 @@ public class Main extends Application {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/settings.fxml"));
             Parent root1 = null;
             try {
-                root1 = (Parent) fxmlLoader.load();
+                root1 = fxmlLoader.load();
             } catch (IOException e) {
                 e.printStackTrace();
             }
             Stage prStage = new Stage();
             prStage.initModality(Modality.APPLICATION_MODAL);
             prStage.setTitle("ABC");
+            SettingsController settingsController = fxmlLoader.getController();
+
+            final Popup popup = new Popup();
+            Label label = new Label("Settings saved");
+            label.setMinHeight(50);
+            label.setMinWidth(15);
+            label.setStyle("-fx-background-color: grey;-fx-background-radius: 5px;-fx-text-fill:white");
+            popup.getContent().add(label);
+            popup.setX(665);
+            popup.setY(385);
+
+            settingsController.saveSettings.setOnMouseClicked(event -> {
+                settingsController.save();
+                popup.show(prStage);
+                new java.util.Timer().schedule(
+                        new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                Platform.runLater(popup::hide);
+                            }
+                        },
+                        2000
+                );
+            });
             prStage.setScene(new Scene(root1));
             prStage.show();
         });

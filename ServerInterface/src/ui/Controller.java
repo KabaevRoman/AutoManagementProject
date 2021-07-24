@@ -1,4 +1,4 @@
-package sample;
+package ui;
 
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -8,7 +8,6 @@ import server.DBConnect;
 import server.client.Server;
 import server.pdo.PDOServer;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

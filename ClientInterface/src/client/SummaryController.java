@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
-import static java.lang.System.exit;
-
 public class SummaryController implements Initializable {
     public TableView<SummaryTable> summaryTable;
     public TableColumn<SummaryTable, String> idSum;

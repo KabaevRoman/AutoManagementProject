@@ -1,9 +1,13 @@
 package client;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.stage.Popup;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,6 +36,19 @@ public class SettingsController implements Initializable {
         }
         sc.close();
     }
+    public void save(){
+        String ipAddress = ipTextField.getText();
+        String port = portTextField.getText();
+        FileWriter myWriter;
+        try {
+            myWriter = new FileWriter("settings.txt");
+            myWriter.write(ipAddress + "\n");
+            myWriter.write(port);
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -40,18 +57,5 @@ public class SettingsController implements Initializable {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        saveSettings.setOnMouseClicked((ActionEvent) -> {
-            String ipAddress = ipTextField.getText();
-            String port = portTextField.getText();
-            FileWriter myWriter;
-            try {
-                myWriter = new FileWriter("settings.txt");
-                myWriter.write(ipAddress + "\n");
-                myWriter.write(port);
-                myWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
     }
 }
