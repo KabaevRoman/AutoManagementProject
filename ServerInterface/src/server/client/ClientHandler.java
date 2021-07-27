@@ -44,7 +44,6 @@ public class ClientHandler implements Runnable {
                 if (inMessage.hasNext()) {
                     String clientMessage = inMessage.nextLine();
                     System.out.println(clientMessage);
-                    System.out.println("nigger? ");
                     switch (clientMessage) {
                         case "#INSERT" -> {
                             String name = inMessage.nextLine();

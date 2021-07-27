@@ -1,4 +1,4 @@
-package com.company;
+package table;
 
 import java.io.Serializable;
 

@@ -42,7 +42,7 @@
       <Label text="Database parameters" GridPane.columnIndex="1" />
       <Label text="Admin server port" GridPane.rowIndex="6" />
       <Label text="User and admin ports mus be different" GridPane.rowIndex="8" />
-      <Label text="Port localhost + 7777 port is reserved by server" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+      <Label text="localhost + 7777 port is reserved by server" GridPane.columnIndex="1" GridPane.rowIndex="8" />
       <Button fx:id="relaunchBtn" mnemonicParsing="false" text="Relaunch server" GridPane.rowIndex="5" />
     </children>
 </GridPane>
