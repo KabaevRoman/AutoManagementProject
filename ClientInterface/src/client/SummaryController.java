@@ -6,22 +6,22 @@ import javafx.collections.FXCollections;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.util.converter.DateTimeStringConverter;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-
-import static java.lang.System.exit;
+import java.util.Scanner;
 
 public class SummaryController implements Initializable {
     public TableView<SummaryTable> summaryTable;
@@ -37,22 +37,35 @@ public class SummaryController implements Initializable {
     public TextField dateTextField;
     public TextField noteTextField;
     public Button sendRequestBtn;
-
+    public Pane headerPane;
+    public Pane closeBtn;
+    public Pane minimizeBtn;
+    public Pane fullscreenBtn;
+    public MenuItem settingsBtn;
+    public MenuItem reconnectBtn;
     private ArrayList<SummaryTable> arrayList;
     private int numOfCars;
     private boolean running = true;
-    private static final String SERVER_HOST = "localhost";
-    private static final int SERVER_PORT = 3443;
+    //private static final String SERVER_HOST = "localhost";
+    //private static final int SERVER_PORT = 3443;
+    private String serverHost;
+    private int serverPort;
     private Socket clientSocket;
     private PrintWriter outMessage;
     private ObjectInputStream objectInputStream;
     private Boolean lock = false;
 
-    public void initClient() throws IOException {
+    public void initClient() {
         arrayList = new ArrayList<>();
-        clientSocket = new Socket(SERVER_HOST, SERVER_PORT);
-        outMessage = new PrintWriter(clientSocket.getOutputStream());
-        objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+        try {
+            clientSocket = new Socket(serverHost, serverPort);
+            outMessage = new PrintWriter(clientSocket.getOutputStream());
+            objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+        } catch (IOException ex) {
+            ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Connection error!", "Error while connecting " +
+                    "to server, check your settings or contact administrator to know about server status");
+            return;
+        }
         new Thread(() -> {
             try {
                 while (running) {
@@ -90,32 +103,27 @@ public class SummaryController implements Initializable {
         }
     }
 
-    public void shutdown() {
-        try {
-            Thread.sleep(100);
-            running = false;
-            outMessage.println("##session##end##");
-            outMessage.flush();
-            outMessage.close();
-            objectInputStream.close();
-            clientSocket.close();
-        } catch (IOException | InterruptedException | NullPointerException ex) {
-            System.out.println("Some kind of error while closing");
-        }
-        System.exit(0);
+    public void shutdown() throws IOException, InterruptedException {
+        Thread.sleep(100);
+        running = false;
+        outMessage.println("##session##end##");
+        outMessage.flush();
+        outMessage.close();
+        objectInputStream.close();
+        clientSocket.close();
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    public void init() {
         try {
-            initClient();
-            sendMsg("#INITTABLE");
-            updateTable();
-        } catch (IOException e) {
-            System.out.println("Error while connecting to server");
-            //e.printStackTrace();
-        }
+            getSettings();
+        } catch (IOException ex) {
 
+        }
+        initClient();
+        if (outMessage != null) {
+            sendMsg("#INITTABLE");
+        }
+        updateTable();
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         dateTextField.setTextFormatter(new TextFormatter<>(new DateTimeStringConverter(format)));
 
@@ -145,6 +153,34 @@ public class SummaryController implements Initializable {
         LocalDateTime now = LocalDateTime.now();
         sendMsg("#FREEAUTO");
         sendMsg(dtf.format(now));
-        shutdown();
+        try {
+            shutdown();
+        } catch (IOException | InterruptedException ex) {
+            System.out.println("Some error occurred while closing application");
+        }
+
+    }
+
+    public void getSettings() throws IOException {
+        File file = new File("settings.txt");
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        Scanner sc = new Scanner(file);
+        if (sc.hasNext()) {
+            serverHost = sc.nextLine();
+        }
+        if (sc.hasNext()) {
+            serverPort = Integer.parseInt(sc.nextLine());
+        }
+        sc.close();
+    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        init();
+        reconnectBtn.setOnAction((ActionEvent) -> {
+            init();
+        });
     }
 }
