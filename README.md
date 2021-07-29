@@ -6,4 +6,4 @@ and sends it to database. As soon as server receives any message to modify datab
 Also settings are implemented so you can launch server and establish clients connections without accesing source codes.
 Current version is in development so a lot of things left TODO, and a lot of bugs left to catch.
 Examples of interface
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
+![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-07-30%20%D0%B2%2000.46.53.png)
