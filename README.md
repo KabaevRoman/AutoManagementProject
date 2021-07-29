@@ -5,3 +5,5 @@ Every client is connected to the server, clients communicate with server by send
 and sends it to database. As soon as server receives any message to modify database it sends updated DB to all clients. There are several input validations inside interface.
 Also settings are implemented so you can launch server and establish clients connections without accesing source codes.
 Current version is in development so a lot of things left TODO, and a lot of bugs left to catch.
+Examples of interface
+![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
