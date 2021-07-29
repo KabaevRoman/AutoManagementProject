@@ -18,7 +18,7 @@ import java.io.IOException;
 public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/sample.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/MainWindow.fxml"));
         Parent root = loader.load();
         stage.setTitle("Admin window");
         stage.setScene(new Scene(root, 1158, 700));

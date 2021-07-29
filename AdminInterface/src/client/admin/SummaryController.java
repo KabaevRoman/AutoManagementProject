@@ -1,6 +1,6 @@
 package client.admin;
 
-import com.company.SummaryTable;
+import table.SummaryTable;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -66,6 +66,7 @@ public class SummaryController implements Initializable {
     private Integer gosNumCellData;
     private String PDOCellData;
     private String idSumCellData;
+    private Boolean connected;
     private final ObservableList<String> optionsList = FXCollections.observableArrayList("Accepted", "Refused", "On approval");
 
     public void initClient() throws IOException, InterruptedException {
@@ -77,7 +78,9 @@ public class SummaryController implements Initializable {
             outMessage = new PrintWriter(clientSocket.getOutputStream());
             objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
             sqlQueryEmpty = true;
+            connected = true;
         } catch (IOException e) {
+            connected = false;
             ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Connection error!", "Error while connecting " +
                     "to server, check your settings or contact administrator to know about server status");
             return;
@@ -88,8 +91,9 @@ public class SummaryController implements Initializable {
                     try {
                         carList = (ArrayList<Integer>) objectInputStream.readObject();
                         pendingApprovalList = (ArrayList<SummaryTable>) objectInputStream.readObject();
-                    } catch (SocketException ex) {
+                    } catch (SocketException | EOFException ex) {
                         System.out.println("socket was closed while listening(it's ok)");
+                        return;
                     }
                     System.out.println(pendingApprovalList);
                     if (sqlQueryEmpty) {
@@ -221,8 +225,15 @@ public class SummaryController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         init();
-
-        settingsBtn.setOnAction((ActionEvent) -> {
+        reconnectBtn.setOnAction((ActionEvent) -> {
+            try {
+                if (connected) {
+                    shutdown();
+                    connected = false;
+                }
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
             init();
         });
     }

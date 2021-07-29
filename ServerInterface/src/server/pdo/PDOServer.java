@@ -78,7 +78,6 @@ public class PDOServer extends Thread {
         this.clearClients();
         System.out.println("Server closed");
         serverSocket.close();
-        //System.exit(0);
     }
 
     public void sendTableToAllPDOClients() throws IOException {
