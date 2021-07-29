@@ -1,6 +1,6 @@
 package client;
 
-import com.company.SummaryTable;
+import table.SummaryTable;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.Initializable;
@@ -66,7 +66,7 @@ public class SummaryController implements Initializable {
                     "to server, check your settings or contact administrator to know about server status");
             return;
         }
-        new Thread(() -> {
+        Thread thread = new Thread(() -> {
             try {
                 while (running) {
                     lock = objectInputStream.readBoolean();
@@ -79,7 +79,8 @@ public class SummaryController implements Initializable {
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
+        thread.start();
     }
 
     public void sendMsg(String msg) {
@@ -106,10 +107,10 @@ public class SummaryController implements Initializable {
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
         running = false;
+        objectInputStream.close();
         outMessage.println("##session##end##");
         outMessage.flush();
         outMessage.close();
-        objectInputStream.close();
         clientSocket.close();
     }
 
@@ -124,13 +125,12 @@ public class SummaryController implements Initializable {
             sendMsg("#INITTABLE");
         }
         updateTable();
+
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         dateTextField.setTextFormatter(new TextFormatter<>(new DateTimeStringConverter(format)));
-
         nameTextField.setPromptText("Name");
         noteTextField.setPromptText("Some note");
         dateTextField.setPromptText("10:00");
-
         sendRequestBtn.setOnAction(e -> {
             String name = nameTextField.getText();
             String timeStr = dateTextField.getText();
@@ -140,7 +140,6 @@ public class SummaryController implements Initializable {
         });
     }
 
-    //TODO таймстемп о возвращении
     public void onStartAlert() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Acceptance of return");
@@ -180,6 +179,11 @@ public class SummaryController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         init();
         reconnectBtn.setOnAction((ActionEvent) -> {
+            try {
+                shutdown();
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
             init();
         });
     }

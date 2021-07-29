@@ -82,7 +82,6 @@ public class Server extends Thread {
         serverSocket.close();
         ss.close();
         pdoServerInfoSocket.close();
-        //System.exit(0);
     }
 
     public void sendTableToAllClients() throws IOException {
