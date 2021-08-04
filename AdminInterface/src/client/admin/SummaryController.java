@@ -13,12 +13,12 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 
-import java.awt.event.ActionEvent;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
@@ -36,7 +36,7 @@ public class SummaryController implements Initializable {
     @FXML
     public TableColumn<SummaryTable, String> note;
     @FXML
-    public TableColumn<SummaryTable, Integer> gosNum;
+    public TableColumn<SummaryTable, String> gosNum;
     @FXML
     public TableColumn<SummaryTable, String> arriveTime;
     @FXML
@@ -57,8 +57,13 @@ public class SummaryController implements Initializable {
     public MenuItem resetDatabaseBtn;
     @FXML
     public MenuItem editDatabaseBtn;
+    @FXML
+    public MenuItem editRegNumBtn;
+
+
+
     private ArrayList<SummaryTable> pendingApprovalList;
-    private ArrayList<Integer> carList;
+    private ArrayList<String> carList;
     private boolean running = true;
     private boolean sqlQueryEmpty;
     private String serverHost;
@@ -67,7 +72,7 @@ public class SummaryController implements Initializable {
     private PrintWriter outMessage;
     private ObjectInputStream objectInputStream;
     private String departureTimeCellData;
-    private Integer gosNumCellData;
+    private String gosNumCellData;
     private String PDOCellData;
     private String idSumCellData;
     private Boolean connected;
@@ -80,7 +85,7 @@ public class SummaryController implements Initializable {
 
         carList = new ArrayList<>();
         pendingApprovalList = new ArrayList<>();
-        gosNumCellData = 0;
+        gosNumCellData = "";
         try {
             clientSocket = new Socket(serverHost, serverPort);
             outMessage = new PrintWriter(clientSocket.getOutputStream());
@@ -97,7 +102,7 @@ public class SummaryController implements Initializable {
             try {
                 while (running) {
                     try {
-                        carList = (ArrayList<Integer>) objectInputStream.readObject();
+                        carList = (ArrayList<String>) objectInputStream.readObject();
                         pendingApprovalList = (ArrayList<SummaryTable>) objectInputStream.readObject();
                     } catch (SocketException | EOFException ex) {
                         System.out.println("socket was closed while listening(it's ok)");
@@ -150,13 +155,21 @@ public class SummaryController implements Initializable {
             table.setPDO(event.getNewValue());
             sqlQueryEmpty = false;
         });
-        resetDatabaseBtn.setOnAction(ActionEvent -> sendMsg("#TRUNCATE"));
+        resetDatabaseBtn.setOnAction(ActionEvent -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Clear database data");
+            alert.setHeaderText("All data from database will be COMPLETELY DELETED! All auto WILL BE SET AS FREE");
+            Optional<ButtonType> option = alert.showAndWait();
+            if (option.get() == ButtonType.OK) {
+                sendMsg("#TRUNCATE");
+            }
+        });
 
         Callback<TableColumn<SummaryTable, String>, TableCell<SummaryTable, String>> cellFactoryBtn =
                 new Callback<>() {
                     @Override
                     public TableCell<SummaryTable, String> call(final TableColumn<SummaryTable, String> param) {
-                        final Button btn = new Button("Отправить");
+                        final Button btn = new Button("Submit");
                         TableCell<SummaryTable, String> t = new TableCell<>() {
                             @Override
                             public void updateItem(String item, boolean empty) {
@@ -177,7 +190,7 @@ public class SummaryController implements Initializable {
                             PDOCellData = PDO.getCellData(cellIndex);
                             sendMsg("#UPDATE");
                             sendMsg(idSumCellData);
-                            sendMsg(gosNumCellData.toString());
+                            sendMsg(gosNumCellData);
                             sendMsg(departureTimeCellData);
                             sendMsg(PDOCellData);
                             sqlQueryEmpty = true;

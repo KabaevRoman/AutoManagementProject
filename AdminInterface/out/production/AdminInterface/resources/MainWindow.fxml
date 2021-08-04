@@ -70,6 +70,7 @@
                   <items>
                     <MenuItem fx:id="settingsBtn" mnemonicParsing="false" text="Settings" />
                         <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Reconnect" />
+                        <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Regestration numbers data edit" />
                   </items>
                 </Menu>
                   <Menu mnemonicParsing="false" text="Emergency settings">

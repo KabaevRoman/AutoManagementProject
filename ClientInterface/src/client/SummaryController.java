@@ -152,6 +152,7 @@ public class SummaryController implements Initializable {
         LocalDateTime now = LocalDateTime.now();
         sendMsg("#FREEAUTO");
         sendMsg(dtf.format(now));
+        System.out.println(dtf.format(now));
         try {
             shutdown();
         } catch (IOException | InterruptedException ex) {

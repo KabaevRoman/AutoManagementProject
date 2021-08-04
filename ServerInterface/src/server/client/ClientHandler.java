@@ -95,12 +95,12 @@ public class ClientHandler implements Runnable {
     public void changeAutoState() throws SQLException {
         ResultSet rs = connection.createStatement().executeQuery(
                 "select gos_num from summary where id = " + "'" + key + "'");
-        Integer gos_num = null;
+        String gos_num = null;
         while (rs.next()) {
-            gos_num = rs.getInt("gos_num");
+            gos_num = rs.getString("gos_num");
         }
         System.out.println(gos_num);
-        connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 1 WHERE reg_num=" + gos_num);
+        connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 1 WHERE reg_num='" + gos_num + "'");
     }
 
 
@@ -132,7 +132,7 @@ public class ClientHandler implements Runnable {
                         rs.getString("departure_time"),
                         rs.getString("pdo"),
                         rs.getString("note"),
-                        rs.getInt("gos_num"),
+                        rs.getString("gos_num"),
                         rs.getString("return_time")));
             }
         } catch (SQLException ex) {

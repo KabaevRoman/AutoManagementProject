@@ -76,7 +76,7 @@ public class EditingController implements Initializable {
                 new Callback<>() {
                     @Override
                     public TableCell<SummaryTable, String> call(final TableColumn<SummaryTable, String> param) {
-                        final Button btn = new Button("Отправить");
+                        final Button btn = new Button("Submit");
                         TableCell<SummaryTable, String> t = new TableCell<>() {
                             @Override
                             public void updateItem(String item, boolean empty) {

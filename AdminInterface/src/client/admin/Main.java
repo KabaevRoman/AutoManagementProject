@@ -115,7 +115,7 @@ public class Main extends Application {
             EditingController controller1 = fxmlLoader.getController();
             Stage prStage = new Stage();
             prStage.initModality(Modality.APPLICATION_MODAL);
-            prStage.setTitle("ABC");
+            prStage.setTitle("Database edit");
             prStage.setOnCloseRequest(event -> {
                 try {
                     controller1.shutdown();
@@ -127,7 +127,28 @@ public class Main extends Application {
             prStage.show();
         });
 
-
+        controller.editRegNumBtn.setOnAction(ActionEvent -> {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/RegistrationNumberMaintenance.fxml"));
+            Parent root1 = null;
+            try {
+                root1 = fxmlLoader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            RegNumMaintenanceController controller1 = fxmlLoader.getController();
+            Stage prStage = new Stage();
+            prStage.initModality(Modality.APPLICATION_MODAL);
+            prStage.setTitle("Registration number maintenance");
+            prStage.setOnCloseRequest(event -> {
+                try {
+                    controller1.shutdown();
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+            prStage.setScene(new Scene(root1));
+            prStage.show();
+        });
         stage.show();
     }
 

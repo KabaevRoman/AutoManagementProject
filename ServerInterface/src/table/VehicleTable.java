@@ -3,27 +3,27 @@ package table;
 import java.io.Serializable;
 
 public class VehicleTable implements Serializable {
-    private String carState;
-    private String carNumber;
+    private String regNum;
+    private String vehicleState;
 
-    public VehicleTable(String carState, String carNumber) {
-        this.carState = carState;
-        this.carNumber = carNumber;
+    public VehicleTable(String regNum, String vehicleState) {
+        this.regNum = regNum;
+        this.vehicleState = vehicleState;
     }
 
-    public String getCarState() {
-        return carState;
+    public String getRegNum() {
+        return regNum;
     }
 
-    public void setCarState(String carState) {
-        this.carState = carState;
+    public void setRegNum(String regNum) {
+        this.regNum = regNum;
     }
 
-    public String getCarNumber() {
-        return carNumber;
+    public String getVehicleState() {
+        return vehicleState;
     }
 
-    public void setCarNumber(String carNumber) {
-        this.carNumber = carNumber;
+    public void setVehicleState(String vehicleState) {
+        this.vehicleState = vehicleState;
     }
 }
