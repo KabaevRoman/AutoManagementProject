@@ -72,6 +72,12 @@
                         <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Reconnect" />
                   </items>
                 </Menu>
+                  <Menu mnemonicParsing="false" text="Emergency settings">
+                    <items>
+                      <MenuItem fx:id="resetDatabaseBtn" mnemonicParsing="false" text="Reset database data" />
+                        <MenuItem fx:id="editDatabaseBtn" mnemonicParsing="false" text="Edit database data" />
+                    </items>
+                  </Menu>
               </menus>
             </MenuBar>
             </children>

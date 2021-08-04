@@ -12,6 +12,7 @@ import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
 import java.io.IOException;
 
 
@@ -65,7 +66,7 @@ public class Main extends Application {
             }
         });
         controller.settingsBtn.setOnAction((ActionEvent) -> {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/settings.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/SettingsWindow.fxml"));
             Parent root1 = null;
             try {
                 root1 = fxmlLoader.load();
@@ -102,6 +103,31 @@ public class Main extends Application {
             prStage.setScene(new Scene(root1));
             prStage.show();
         });
+
+        controller.editDatabaseBtn.setOnAction((ActionEvent) -> {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/EditingWindow.fxml"));
+            Parent root1 = null;
+            try {
+                root1 = fxmlLoader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            EditingController controller1 = fxmlLoader.getController();
+            Stage prStage = new Stage();
+            prStage.initModality(Modality.APPLICATION_MODAL);
+            prStage.setTitle("ABC");
+            prStage.setOnCloseRequest(event -> {
+                try {
+                    controller1.shutdown();
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+            prStage.setScene(new Scene(root1));
+            prStage.show();
+        });
+
+
         stage.show();
     }
 

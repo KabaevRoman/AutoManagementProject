@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+
+<TableView fx:id="summaryTable" prefHeight="701.0" prefWidth="1158.0" xmlns="http://javafx.com/javafx/16"
+           xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.EditingController">
+    <columns>
+        <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="ID"/>
+        <TableColumn fx:id="name" minWidth="6.0" prefWidth="84.05426788330078" text="Name"/>
+        <TableColumn fx:id="departureTime" prefWidth="98.5" text="Departure time"/>
+        <TableColumn fx:id="PDO" prefWidth="124.0" text="Admin"/>
+        <TableColumn fx:id="note" prefWidth="94.0" text="Note"/>
+        <TableColumn fx:id="gosNum" prefWidth="261.5" text="Government number"/>
+        <TableColumn fx:id="arriveTime" prefWidth="116.5" text="Return time"/>
+        <TableColumn fx:id="buttonsCol" prefWidth="125.5"/>
+    </columns>
+</TableView>

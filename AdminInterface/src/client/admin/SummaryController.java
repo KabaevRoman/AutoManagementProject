@@ -13,6 +13,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 
+import java.awt.event.ActionEvent;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
@@ -52,7 +53,10 @@ public class SummaryController implements Initializable {
     public MenuItem settingsBtn;
     @FXML
     public MenuItem reconnectBtn;
-
+    @FXML
+    public MenuItem resetDatabaseBtn;
+    @FXML
+    public MenuItem editDatabaseBtn;
     private ArrayList<SummaryTable> pendingApprovalList;
     private ArrayList<Integer> carList;
     private boolean running = true;
@@ -70,6 +74,10 @@ public class SummaryController implements Initializable {
     private final ObservableList<String> optionsList = FXCollections.observableArrayList("Accepted", "Refused", "On approval");
 
     public void initClient() throws IOException, InterruptedException {
+        String[] serverParams = getSettings();
+        serverHost = serverParams[0];
+        serverPort = Integer.parseInt(serverParams[1]);
+
         carList = new ArrayList<>();
         pendingApprovalList = new ArrayList<>();
         gosNumCellData = 0;
@@ -142,6 +150,7 @@ public class SummaryController implements Initializable {
             table.setPDO(event.getNewValue());
             sqlQueryEmpty = false;
         });
+        resetDatabaseBtn.setOnAction(ActionEvent -> sendMsg("#TRUNCATE"));
 
         Callback<TableColumn<SummaryTable, String>, TableCell<SummaryTable, String>> cellFactoryBtn =
                 new Callback<>() {
@@ -193,25 +202,26 @@ public class SummaryController implements Initializable {
         clientSocket.close();
     }
 
-    public void getSettings() throws IOException {
+    public static String[] getSettings() throws IOException {
         File file = new File("settings.txt");
         if (!file.exists()) {
             file.createNewFile();
         }
+        String[] serverParams = new String[2];
         Scanner sc = new Scanner(file);
         if (sc.hasNext()) {
-            serverHost = sc.nextLine();
+            serverParams[0] = sc.nextLine();
         }
         if (sc.hasNext()) {
-            serverPort = Integer.parseInt(sc.nextLine());
+            serverParams[1] = sc.nextLine();
         }
         sc.close();
+        return serverParams;
     }
 
     public void init() {
         sqlQueryEmpty = true;
         try {
-            getSettings();
             initClient();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

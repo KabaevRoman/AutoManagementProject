@@ -157,7 +157,6 @@ public class SummaryController implements Initializable {
         } catch (IOException | InterruptedException ex) {
             System.out.println("Some error occurred while closing application");
         }
-
     }
 
     public void getSettings() throws IOException {

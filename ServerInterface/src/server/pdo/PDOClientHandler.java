@@ -51,6 +51,12 @@ public class PDOClientHandler implements Runnable {
                             server.sendMsgToClientServer(id);
                         }
                         case "#INITPDOTABLE" -> sendTable();
+                        case "#TRUNCATE" -> {
+                            resetData();
+                            server.sendTableToAllPDOClients();
+                            server.sendMsgToClientServer("#TRUNCATE");
+                        }
+                        case "#DBMAINTENANCE" -> getAllRecords();
                         case "##session##end##" -> this.close();
                     }
                 }
@@ -59,6 +65,7 @@ public class PDOClientHandler implements Runnable {
             }
         }
     }
+
     //TODO оформить подключение к кастомным бд и настройку портов
     //TODO сделать обнуление базы данных пре перезапуске сервера
     public void close() throws IOException {
@@ -66,8 +73,12 @@ public class PDOClientHandler implements Runnable {
         clientSocket.close();
         server.removeClient(key);
         clients_count--;
-        //objectOutputStream.flush();
         objectOutputStream.close();
+    }
+
+    public void resetData() throws SQLException {
+        connection.createStatement().executeUpdate("TRUNCATE TABLE summary");
+        connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 1");
     }
 
     public void updateRecording(String id, String gos_num, String departure_time, String pdo) throws SQLException {
@@ -78,6 +89,24 @@ public class PDOClientHandler implements Runnable {
                 "' WHERE id='" + id + "'"
         );
     }
+
+    public void getAllRecords() throws SQLException, IOException {
+        ArrayList<SummaryTable> arrayList = new ArrayList<>();
+        ResultSet rs = connection.createStatement().executeQuery("SELECT*FROM summary");
+        while (rs.next()) {
+            arrayList.add(new SummaryTable(
+                    rs.getString("id"),
+                    rs.getString("fio"),
+                    rs.getString("departure_time"),
+                    rs.getString("pdo"),
+                    rs.getString("note"),
+                    rs.getInt("gos_num"),
+                    rs.getString("return_time")));
+        }
+        objectOutputStream.writeObject(arrayList);
+        objectOutputStream.flush();
+    }
+
 
     public void sendTable() throws IOException {
         ArrayList<Integer> carList = new ArrayList<>();
