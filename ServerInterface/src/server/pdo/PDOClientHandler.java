@@ -55,7 +55,7 @@ public class PDOClientHandler implements Runnable {
                         case "#TRUNCATE" -> {
                             resetData();
                             server.sendTableToAllPDOClients();
-                            server.sendMsgToClientServer("#TRUNCATE");
+                            server.sendMsgToClientServer("#UPDATEUI");
                         }
                         case "#DBMAINTENANCE" -> getAllRecords();
                         case "#REGNUMMAINTENANCE" -> getRegNumRecords();
@@ -64,7 +64,19 @@ public class PDOClientHandler implements Runnable {
                             String state = inMessage.nextLine();
                             updateRegNum(reg_num, state);
                             server.sendTableToAllPDOClients();
-                            server.sendMsgToClientServer("#TRUNCATE");
+                            server.sendMsgToClientServer("#UPDATEUI");
+                        }
+                        case "#ADDVEHICLE" -> {
+                            String reg_num = inMessage.nextLine();
+                            String state = inMessage.nextLine();
+                            addVehicle(reg_num, state);
+                            server.sendTableToAllPDOClients();
+                            server.sendMsgToClientServer("#UPDATEUI");
+                        }
+                        case "#DELETEVEHICLE" -> {
+                            deleteVehicle();
+                            server.sendTableToAllPDOClients();
+                            server.sendMsgToClientServer("#UPDATEUI");
                         }
                         case "##session##end##" -> this.close();
                     }
@@ -73,6 +85,15 @@ public class PDOClientHandler implements Runnable {
                 ex.printStackTrace();
             }
         }
+    }
+
+    public void deleteVehicle() {
+
+    }
+
+    private void addVehicle(String reg_num, String state) throws SQLException {
+        connection.createStatement().executeUpdate("INSERT INTO car_list(reg_num,car_state) VALUES('" + reg_num + "'," +
+                "'" + state + "')");
     }
 
 

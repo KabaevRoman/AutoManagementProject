@@ -14,9 +14,24 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class Main extends Application {
+
+    public Popup createPopup(String popupText, double PosX, double PosY) {
+        final Popup popup = new Popup();
+        Label label = new Label(popupText);
+        label.setMinHeight(50);
+        label.setMinWidth(15);
+        label.setStyle("-fx-background-color: grey;-fx-background-radius: 5px;-fx-text-fill:white");
+        popup.getContent().add(label);
+        popup.setX(665);
+        popup.setY(385);
+        return popup;
+    }
+
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/MainWindow.fxml"));
@@ -65,6 +80,7 @@ public class Main extends Application {
                 System.out.println("error in closing");
             }
         });
+
         controller.settingsBtn.setOnAction((ActionEvent) -> {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/SettingsWindow.fxml"));
             Parent root1 = null;
@@ -78,20 +94,12 @@ public class Main extends Application {
             prStage.setTitle("ABC");
             SettingsController settingsController = fxmlLoader.getController();
 
-            final Popup popup = new Popup();
-            Label label = new Label("Settings saved");
-            label.setMinHeight(50);
-            label.setMinWidth(15);
-            label.setStyle("-fx-background-color: grey;-fx-background-radius: 5px;-fx-text-fill:white");
-            popup.getContent().add(label);
-            popup.setX(665);
-            popup.setY(385);
-
+            Popup popup = createPopup("settings saved", 665, 385);
             settingsController.saveSettings.setOnMouseClicked(event -> {
                 settingsController.save();
                 popup.show(prStage);
-                new java.util.Timer().schedule(
-                        new java.util.TimerTask() {
+                new Timer().schedule(
+                        new TimerTask() {
                             @Override
                             public void run() {
                                 Platform.runLater(popup::hide);
@@ -112,13 +120,13 @@ public class Main extends Application {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            EditingController controller1 = fxmlLoader.getController();
+            EditingController editingController = fxmlLoader.getController();
             Stage prStage = new Stage();
             prStage.initModality(Modality.APPLICATION_MODAL);
             prStage.setTitle("Database edit");
             prStage.setOnCloseRequest(event -> {
                 try {
-                    controller1.shutdown();
+                    editingController.shutdown();
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -135,13 +143,28 @@ public class Main extends Application {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            RegNumMaintenanceController controller1 = fxmlLoader.getController();
+            RegNumMaintenanceController regNumMaintenanceController = fxmlLoader.getController();
             Stage prStage = new Stage();
             prStage.initModality(Modality.APPLICATION_MODAL);
             prStage.setTitle("Registration number maintenance");
+            Popup popup = createPopup("Vehicle added!", 750, 385);
+            regNumMaintenanceController.addVehicleBtn.setOnAction(event -> {
+                regNumMaintenanceController.addVehicle();
+                popup.show(prStage);
+                new Timer().schedule(
+                        new TimerTask() {
+                            @Override
+                            public void run() {
+                                Platform.runLater(popup::hide);
+                            }
+                        },
+                        2000
+                );
+            });
+
             prStage.setOnCloseRequest(event -> {
                 try {
-                    controller1.shutdown();
+                    regNumMaintenanceController.shutdown();
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -156,6 +179,7 @@ public class Main extends Application {
     public void stop() {
         System.out.println("Stopping application");
     }
+    //TODO make reconnect working
 
     public static void main(String[] args) {
         launch(args);

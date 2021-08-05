@@ -155,6 +155,7 @@ public class SummaryController implements Initializable {
             table.setPDO(event.getNewValue());
             sqlQueryEmpty = false;
         });
+        //TODO разделить сброс таблиц в базе данных
         resetDatabaseBtn.setOnAction(ActionEvent -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Clear database data");

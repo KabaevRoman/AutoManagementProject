@@ -5,10 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -16,6 +13,7 @@ import javafx.util.Callback;
 import table.SummaryTable;
 import table.VehicleTable;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
@@ -26,6 +24,11 @@ import java.util.ResourceBundle;
 import java.util.Scanner;
 
 public class RegNumMaintenanceController implements Initializable {
+    enum btnType {
+        SUBMIT,
+        DELETE
+    }
+
     @FXML
     public TableView<VehicleTable> vehicleTable;
     @FXML
@@ -34,6 +37,14 @@ public class RegNumMaintenanceController implements Initializable {
     public TableColumn<VehicleTable, String> vehicleState;
     @FXML
     public TableColumn<VehicleTable, String> buttonsCol;
+    @FXML
+    public TextField regNumTextField;
+    @FXML
+    public ComboBox<String> stateBox;
+    @FXML
+    public Button addVehicleBtn;
+    @FXML
+    public TableColumn<VehicleTable, String> delButtonCol;
 
     private String regNumCellData;
     private String vehicleStateCellData;
@@ -47,6 +58,62 @@ public class RegNumMaintenanceController implements Initializable {
     private ArrayList<VehicleTable> arrayList;
     private final ObservableList<String> optionsList = FXCollections.observableArrayList("Free", "Busy", "On maintenance");
 
+    public void addVehicle() {
+        sendMsg("#ADDVEHICLE");
+        sendMsg(regNumTextField.getText());
+        String state = stateBox.getValue();
+        switch (state) {
+            case "Free" -> sendMsg("1");
+            case "Busy" -> sendMsg("0");
+            case "On maintenance" -> sendMsg("2");
+        }
+        sendMsg(state);
+    }
+
+    public Callback<TableColumn<VehicleTable, String>, TableCell<VehicleTable, String>> formCellFactoryBtn(String btnName, btnType type) {
+        return new Callback<>() {
+            @Override
+            public TableCell<VehicleTable, String> call(final TableColumn<VehicleTable, String> param) {
+                final Button btn = new Button(btnName);
+                TableCell<VehicleTable, String> t = new TableCell<>() {
+                    @Override
+                    public void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            setGraphic(btn);
+                        }
+                        setText(null);
+                    }
+                };
+                switch (type) {
+                    case SUBMIT -> btn.setOnAction(e -> {
+                        int cellIndex = t.getTableRow().getIndex();
+                        regNumCellData = regNum.getCellData(cellIndex);
+                        vehicleStateCellData = vehicleState.getCellData(cellIndex);
+                        sendMsg("#VEHICLESTATECHANGED");
+                        sendMsg(regNumCellData);
+                        switch (vehicleStateCellData) {
+                            case "Free" -> sendMsg("1");
+                            case "Busy" -> sendMsg("0");
+                            case "On maintenance" -> sendMsg("2");
+                        }
+                        updateTable();
+                    });
+                    case DELETE -> btn.setOnAction(e -> {
+                        int cellIndex = t.getTableRow().getIndex();
+                        regNumCellData = regNum.getCellData(cellIndex);
+                        sendMsg("#DEELETEVEHICLE");
+                        sendMsg(regNumCellData);
+                        updateTable();
+                    });
+                }
+                return t;
+            }
+        };
+    }
+
     public void updateTable() {
         regNum.setCellValueFactory(new PropertyValueFactory<>("regNum"));
         vehicleState.setCellValueFactory(new PropertyValueFactory<>("vehicleState"));
@@ -58,40 +125,9 @@ public class RegNumMaintenanceController implements Initializable {
             table.setVehicleState(event.getNewValue());
         });
 
-        Callback<TableColumn<VehicleTable, String>, TableCell<VehicleTable, String>> cellFactoryBtn =
-                new Callback<>() {
-                    @Override
-                    public TableCell<VehicleTable, String> call(final TableColumn<VehicleTable, String> param) {
-                        final Button btn = new Button("Submit");
-                        TableCell<VehicleTable, String> t = new TableCell<>() {
-                            @Override
-                            public void updateItem(String item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty) {
-                                    setGraphic(null);
-                                } else {
-                                    setGraphic(btn);
-                                }
-                                setText(null);
-                            }
-                        };
-                        btn.setOnAction(e -> {
-                            int cellIndex = t.getTableRow().getIndex();
-                            regNumCellData = regNum.getCellData(cellIndex);
-                            vehicleStateCellData = vehicleState.getCellData(cellIndex);
-                            sendMsg("#VEHICLESTATECHANGED");
-                            sendMsg(regNumCellData);
-                            switch (vehicleStateCellData) {
-                                case "Free" -> sendMsg("1");
-                                case "Busy" -> sendMsg("0");
-                                case "On maintenance" -> sendMsg("2");
-                            }
-                            updateTable();
-                        });
-                        return t;
-                    }
-                };
-        buttonsCol.setCellFactory(cellFactoryBtn);
+        stateBox.getItems().setAll(optionsList);
+        buttonsCol.setCellFactory(formCellFactoryBtn("Submit", btnType.SUBMIT));
+        delButtonCol.setCellFactory(formCellFactoryBtn("Delete", btnType.DELETE));
         vehicleTable.setEditable(true);
         vehicleTable.setItems(FXCollections.observableArrayList(arrayList));
     }

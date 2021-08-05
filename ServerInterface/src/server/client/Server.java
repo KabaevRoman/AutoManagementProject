@@ -51,7 +51,7 @@ public class Server extends Thread {
                                 e.printStackTrace();
                             }
                         }
-                        case "#TRUNCATE"->{
+                        case "#UPDATEUI"->{
                             try {
                                 sendTableToAllClients();
                             } catch (IOException e) {
