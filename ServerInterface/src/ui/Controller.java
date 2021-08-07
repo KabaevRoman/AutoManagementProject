@@ -2,6 +2,7 @@ package ui;
 
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import server.DBConnect;
@@ -24,6 +25,7 @@ public class Controller implements Initializable {
     public PasswordField dbPassword;
     public Button saveBtn;
     public Button relaunchBtn;
+    public Label numOfClientsLabel;
 
     private String dbAddressString = "";
     private String dbNameString = "";
@@ -42,31 +44,42 @@ public class Controller implements Initializable {
             file.createNewFile();
         }
         Scanner sc = new Scanner(file);
-        if (sc.hasNext()) {
-            dbAddressString = sc.nextLine();
-            dbAddress.setText(dbAddressString);
-        }
-        if (sc.hasNext()) {
-            dbNameString = sc.nextLine();
-            dbName.setText(dbNameString);
-        }
-        if (sc.hasNext()) {
-            dbUserString = sc.nextLine();
-            dbUser.setText(dbUserString);
-        }
-        if (sc.hasNext()) {
-            dbPasswordString = sc.nextLine();
-            dbPassword.setText(dbPasswordString);
-        }
-        if (sc.hasNext()) {
-            portUserString = sc.nextLine();
-            portUser.setText(portUserString);
-        }
-        if (sc.hasNext()) {
-            portAdminString = sc.nextLine();
-            portAdmin.setText(portAdminString);
+        for (int i = 0; i < 6; i++) {
+            check(sc, i);
         }
         sc.close();
+    }
+
+    public void check(Scanner sc, int index) {
+        if (sc.hasNext()) {
+            switch (index) {
+                case 0 -> {
+                    dbAddressString = sc.nextLine();
+                    dbAddress.setText(dbAddressString);
+                }
+                case 1 -> {
+                    dbNameString = sc.nextLine();
+                    dbName.setText(dbNameString);
+                }
+                case 2 -> {
+                    dbUserString = sc.nextLine();
+                    dbUser.setText(dbUserString);
+                }
+                case 3 -> {
+                    dbPasswordString = sc.nextLine();
+                    dbPassword.setText(dbPasswordString);
+                }
+                case 4 -> {
+                    portUserString = sc.nextLine();
+                    portUser.setText(portUserString);
+                }
+                case 5 -> {
+                    portAdminString = sc.nextLine();
+                    portAdmin.setText(portAdminString);
+                }
+            }
+        }
+
     }
 
     public void setSettings() {
@@ -87,7 +100,7 @@ public class Controller implements Initializable {
     public void init() throws IOException {
         getSettings();
         dbConnect = new DBConnect(dbAddressString, dbNameString, dbUserString, dbPasswordString);
-        serverUser = new Server(Integer.parseInt(portUserString), dbConnect);
+        serverUser = new Server(Integer.parseInt(portUserString), dbConnect, this);
         serverUser.start();
         serverPdo = new PDOServer(Integer.parseInt(portAdminString), dbConnect);
         serverPdo.start();
@@ -97,7 +110,8 @@ public class Controller implements Initializable {
         serverUser.close();
         serverPdo.close();
     }
-    public void closeProgram(){
+
+    public void closeProgram() {
         System.exit(0);
     }
 

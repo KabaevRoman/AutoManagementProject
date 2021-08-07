@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.Pane?>
 
-<BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.SummaryController">
+<BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.MainWindowController">
     <center>
         <TableView fx:id="summaryTable" prefHeight="701.0" prefWidth="1158.0">
             <columns>
@@ -70,8 +70,16 @@
                   <items>
                     <MenuItem fx:id="settingsBtn" mnemonicParsing="false" text="Settings" />
                         <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Reconnect" />
+                        <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Regestration numbers data edit" />
                   </items>
                 </Menu>
+                  <Menu mnemonicParsing="false" text="Emergency settings">
+                    <items>
+                      <MenuItem fx:id="resetDatabaseBtn" mnemonicParsing="false" text="Reset main table data" />
+                        <MenuItem fx:id="resetVehicleStateBtn" mnemonicParsing="false" text="Reset vehicle state" />
+                        <MenuItem fx:id="editDatabaseBtn" mnemonicParsing="false" text="Edit database data" />
+                    </items>
+                  </Menu>
               </menus>
             </MenuBar>
             </children>

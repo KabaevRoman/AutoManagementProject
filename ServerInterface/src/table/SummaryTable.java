@@ -8,11 +8,11 @@ public class SummaryTable implements Serializable {
     private String departureTime;
     private String PDO;
     private String note;
-    private Integer gosNum;
+    private String gosNum;
     private String arriveTime;
 
 
-    public SummaryTable(String idSum, String name, String departureTime, String PDO, String note, Integer gosNum, String arriveTime) {
+    public SummaryTable(String idSum, String name, String departureTime, String PDO, String note, String gosNum, String arriveTime) {
         this.idSum = idSum;
         this.name = name;
         this.departureTime = departureTime;
@@ -42,7 +42,7 @@ public class SummaryTable implements Serializable {
         return note;
     }
 
-    public Integer getGosNum() {
+    public String getGosNum() {
         return gosNum;
     }
 
@@ -71,7 +71,7 @@ public class SummaryTable implements Serializable {
         this.note = note;
     }
 
-    public void setGosNum(Integer gosNum) {
+    public void setGosNum(String gosNum) {
         this.gosNum = gosNum;
     }
 

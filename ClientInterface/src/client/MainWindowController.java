@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -23,7 +24,9 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
-public class SummaryController implements Initializable {
+import static java.lang.System.exit;
+
+public class MainWindowController implements Initializable {
     public TableView<SummaryTable> summaryTable;
     public TableColumn<SummaryTable, String> idSum;
     public TableColumn<SummaryTable, String> name;
@@ -45,7 +48,7 @@ public class SummaryController implements Initializable {
     public MenuItem reconnectBtn;
     private ArrayList<SummaryTable> arrayList;
     private int numOfCars;
-    private boolean running = true;
+    private boolean running;
     //private static final String SERVER_HOST = "localhost";
     //private static final int SERVER_PORT = 3443;
     private String serverHost;
@@ -70,11 +73,12 @@ public class SummaryController implements Initializable {
             try {
                 while (running) {
                     lock = objectInputStream.readBoolean();
-                    System.out.println();
+                    System.out.println(lock);
                     numOfCars = objectInputStream.readInt();
                     arrayList = (ArrayList<SummaryTable>) objectInputStream.readObject();
                     System.out.println(arrayList);
-                    updateTable();
+                    //formTable();
+                    updateTableData();
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
@@ -88,7 +92,7 @@ public class SummaryController implements Initializable {
         outMessage.flush();
     }
 
-    public void updateTable() {
+    public void formTable() {
         idSum.setCellValueFactory(new PropertyValueFactory<>("idSum"));
         name.setCellValueFactory(new PropertyValueFactory<>("name"));
         departureTime.setCellValueFactory(new PropertyValueFactory<>("departureTime"));
@@ -96,6 +100,10 @@ public class SummaryController implements Initializable {
         note.setCellValueFactory(new PropertyValueFactory<>("note"));
         gosNum.setCellValueFactory(new PropertyValueFactory<>("gosNum"));
         arriveTime.setCellValueFactory(new PropertyValueFactory<>("arriveTime"));
+    }
+
+    public void updateTableData() {
+        summaryTable.getItems().clear();
         Platform.runLater(() -> displayNumOfCars.setText(String.valueOf(numOfCars)));
         summaryTable.setItems(FXCollections.observableArrayList(arrayList));
         if (lock) {
@@ -106,25 +114,44 @@ public class SummaryController implements Initializable {
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
-        running = false;
-        objectInputStream.close();
         outMessage.println("##session##end##");
         outMessage.flush();
+        running = false;
+        objectInputStream.close();
         outMessage.close();
         clientSocket.close();
+        exit(0);//временное решение
+    }
+
+    public void reconnect() throws IOException, InterruptedException {
+        Thread.sleep(100);
+        running = false;
+        try {
+            outMessage.println("##session##end##");
+            outMessage.flush();
+            outMessage.close();
+            objectInputStream.close();
+            clientSocket.close();
+        } catch (NullPointerException ex) {
+            System.out.println("NIGGER");
+        }
+        objectInputStream = null;
+        init();
     }
 
     public void init() {
+        running = true;
         try {
             getSettings();
         } catch (IOException ex) {
-
+            ex.printStackTrace();
         }
         initClient();
         if (outMessage != null) {
             sendMsg("#INITTABLE");
         }
-        updateTable();
+        formTable();
+        updateTableData();
 
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         dateTextField.setTextFormatter(new TextFormatter<>(new DateTimeStringConverter(format)));
@@ -152,12 +179,12 @@ public class SummaryController implements Initializable {
         LocalDateTime now = LocalDateTime.now();
         sendMsg("#FREEAUTO");
         sendMsg(dtf.format(now));
+        System.out.println(dtf.format(now));
         try {
             shutdown();
         } catch (IOException | InterruptedException ex) {
             System.out.println("Some error occurred while closing application");
         }
-
     }
 
     public void getSettings() throws IOException {
@@ -180,11 +207,10 @@ public class SummaryController implements Initializable {
         init();
         reconnectBtn.setOnAction((ActionEvent) -> {
             try {
-                shutdown();
+                reconnect();
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
-            init();
         });
     }
 }

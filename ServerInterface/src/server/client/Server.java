@@ -1,6 +1,7 @@
 package server.client;
 
 import server.DBConnect;
+import ui.Controller;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,8 +23,10 @@ public class Server extends Thread {
     private ServerSocket ss;
     private Socket pdoServerInfoSocket;
     private final DBConnect dbConnect;
+    public Controller controller;
 
-    public Server(int port, DBConnect dbConnect) throws IOException {
+    public Server(int port, DBConnect dbConnect, Controller controller) throws IOException {
+        this.controller = controller;
         serverSocket = new ServerSocket(port);
         this.dbConnect = dbConnect;
         System.out.println("Client server launched");
@@ -47,6 +50,13 @@ public class Server extends Thread {
                                 sendTableToAllClients();
                                 String id = inMessage.nextLine();
                                 clients.get(Integer.parseInt(id)).sendTable(true);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        case "#UPDATEUI"->{
+                            try {
+                                sendTableToAllClients();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
