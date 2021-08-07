@@ -105,10 +105,6 @@ public class ClientHandler implements Runnable {
         connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 1 WHERE reg_num='" + gos_num + "'");
     }
 
-    public int getNumOfClients() {
-        return clients_count;
-    }
-
     public void sendTable(boolean lock) throws IOException {
         objectOutputStream.writeBoolean(lock);
         objectOutputStream.flush();

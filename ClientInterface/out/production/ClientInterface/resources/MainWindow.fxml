@@ -62,7 +62,7 @@
                             <children>
                                 <ImageView fitHeight="12.0" fitWidth="12.0" layoutX="17.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@min-k-30.png" />
+                                        <Image url="@images/min-k-30.png" />
                                     </image>
                                 </ImageView>
                             </children>
@@ -71,7 +71,7 @@
                             <children>
                                 <ImageView fitHeight="12.0" fitWidth="12.0" layoutX="17.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@max-k-30.png" />
+                                        <Image url="@images/max-k-30.png" />
                                     </image>
                                 </ImageView>
                             </children>
@@ -80,7 +80,7 @@
                             <children>
                                 <ImageView fitHeight="12.0" fitWidth="12.0" layoutX="17.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@close-k-30.png" />
+                                        <Image url="@images/close-k-30.png" />
                                     </image>
                                 </ImageView>
                             </children>

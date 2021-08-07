@@ -2,17 +2,15 @@ package client.admin;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,8 +25,8 @@ public class Main extends Application {
         label.setMinWidth(15);
         label.setStyle("-fx-background-color: grey;-fx-background-radius: 5px;-fx-text-fill:white");
         popup.getContent().add(label);
-        popup.setX(665);
-        popup.setY(385);
+        popup.setX(PosX);
+        popup.setY(PosY);
         return popup;
     }
 
@@ -39,51 +37,6 @@ public class Main extends Application {
         stage.setTitle("Admin window");
         stage.setScene(new Scene(root, 1158, 700));
         MainWindowController controller = loader.getController();
-        stage.initStyle(StageStyle.UNDECORATED);
-        final double[] mousePressedX = new double[1];
-        final double[] mousePressedY = new double[1];
-
-        controller.headerPane.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                mousePressedX[0] = mouseEvent.getX();
-                mousePressedY[0] = mouseEvent.getY();
-            }
-        });
-
-        controller.closeBtn.setOnMouseClicked((ActionEvent) -> {
-            try {
-                controller.shutdown();
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-
-        controller.fullscreenBtn.setOnMouseClicked((ActionEvent) -> {
-            stage.setFullScreen(!stage.isFullScreen());
-        });
-
-        controller.minimizeBtn.setOnMouseClicked((ActionEvent) -> {
-            stage.setIconified(true);
-        });
-
-        controller.headerPane.addEventFilter(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                double crrX = mouseEvent.getScreenX();
-                double crrY = mouseEvent.getScreenY();
-                stage.setX(crrX - mousePressedX[0]);
-                stage.setY(crrY - mousePressedY[0]);
-            }
-        });
-
-        stage.setOnCloseRequest(event -> {
-            try {
-                controller.shutdown();
-            } catch (IOException | InterruptedException | NullPointerException e) {
-                System.out.println("error in closing");
-            }
-        });
 
         controller.settingsBtn.setOnAction((ActionEvent) -> {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/SettingsWindow.fxml"));
@@ -116,6 +69,8 @@ public class Main extends Application {
             prStage.show();
         });
 
+        controller.resetDatabaseBtn.setOnAction(ActionEvent -> controller.truncateDatabase());
+        controller.resetVehicleStateBtn.setOnAction(ActionEvent -> controller.resetVehicleState());
         controller.editDatabaseBtn.setOnAction((ActionEvent) -> {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/EditingWindow.fxml"));
             Parent root1 = null;
@@ -175,6 +130,13 @@ public class Main extends Application {
             });
             prStage.setScene(new Scene(root1));
             prStage.show();
+        });
+        stage.setOnCloseRequest(ActionEvent -> {
+            try {
+                controller.shutdown();
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
         });
         stage.show();
     }

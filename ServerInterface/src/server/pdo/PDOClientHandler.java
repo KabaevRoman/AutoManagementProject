@@ -95,10 +95,6 @@ public class PDOClientHandler implements Runnable {
         }
     }
 
-    public int getNumOfAdminClients() {
-        return clients_count;
-    }
-
     public void deleteVehicle(String reg_num) throws SQLException {
         connection.createStatement().executeUpdate("DELETE FROM car_list WHERE reg_num='" + reg_num + "'");
     }

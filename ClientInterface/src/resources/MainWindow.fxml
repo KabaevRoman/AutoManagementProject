@@ -9,9 +9,6 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToolBar?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -42,12 +39,12 @@
              <TableView fx:id="summaryTable" layoutY="26.0" prefHeight="639.0" prefWidth="1156.0">
                  <columns>
                      <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="№ID" />
-                     <TableColumn fx:id="name" minWidth="6.0" prefWidth="84.05426788330078" text="ФИО" />
-                     <TableColumn fx:id="departureTime" prefWidth="94.34278106689453" text="Departure time" />
-                     <TableColumn fx:id="PDO" prefWidth="97.7745361328125" text="Admin" />
-                     <TableColumn fx:id="note" prefWidth="123.72543334960938" text="Note" />
-                     <TableColumn fx:id="gosNum" prefWidth="62.153961181640625" text="Government number" />
-                     <TableColumn fx:id="arriveTime" prefWidth="220.29718017578125" text="Return time" />
+                     <TableColumn fx:id="name" minWidth="6.0" prefWidth="209.5" text="Name" />
+                     <TableColumn fx:id="departureTime" prefWidth="120.5" text="Departure time" />
+                     <TableColumn fx:id="PDO" prefWidth="162.0" text="Admin" />
+                     <TableColumn fx:id="note" prefWidth="311.0" text="Note" />
+                     <TableColumn fx:id="gosNum" prefWidth="143.5" text="Government number" />
+                     <TableColumn fx:id="arriveTime" prefWidth="168.5" text="Return time" />
                  </columns>
              </TableView>
          </children>
@@ -56,41 +53,7 @@
     <top>
         <Pane fx:id="headerPane" prefHeight="32.0" prefWidth="1158.0" styleClass="titleBar" stylesheets="@style.css" BorderPane.alignment="CENTER">
             <children>
-                <ToolBar layoutX="1005.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="160.0">
-                    <items>
-                        <Pane fx:id="minimizeBtn" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="46.0" styleClass="minimizeBtn" stylesheets="@style.css">
-                            <children>
-                                <ImageView fitHeight="12.0" fitWidth="12.0" layoutX="17.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@min-k-30.png" />
-                                    </image>
-                                </ImageView>
-                            </children>
-                        </Pane>
-                        <Pane fx:id="fullscreenBtn" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="46.0" styleClass="fullscreenBtn" stylesheets="@style.css">
-                            <children>
-                                <ImageView fitHeight="12.0" fitWidth="12.0" layoutX="17.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@max-k-30.png" />
-                                    </image>
-                                </ImageView>
-                            </children>
-                        </Pane>
-                        <Pane fx:id="closeBtn" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="46.0" styleClass="closeBtn" stylesheets="@style.css">
-                            <children>
-                                <ImageView fitHeight="12.0" fitWidth="12.0" layoutX="17.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@close-k-30.png" />
-                                    </image>
-                                </ImageView>
-                            </children>
-                            <padding>
-                                <Insets left="-5.0" />
-                            </padding>
-                        </Pane>
-                    </items>
-                </ToolBar>
-                <MenuBar layoutX="-9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="1022.0" stylesheets="@style.css">
+                <MenuBar layoutX="-9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="1167.0" stylesheets="@style.css">
                     <menus>
                         <Menu mnemonicParsing="false" text="File">
                             <items>

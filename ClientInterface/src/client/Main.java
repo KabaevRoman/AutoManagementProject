@@ -24,43 +24,6 @@ public class Main extends Application {
         stage.setTitle("Client window");
         stage.setScene(new Scene(root, 1156, 700));
         MainWindowController controller = loader.getController();
-        stage.initStyle(StageStyle.UNDECORATED);
-        final double[] mousePressedX = new double[1];
-        final double[] mousePressedY = new double[1];
-
-        controller.headerPane.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                mousePressedX[0] = mouseEvent.getX();
-                mousePressedY[0] = mouseEvent.getY();
-            }
-        });
-
-        controller.closeBtn.setOnMouseClicked((ActionEvent) -> {
-            try {
-                controller.shutdown();
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-
-        controller.fullscreenBtn.setOnMouseClicked((ActionEvent) -> {
-            stage.setFullScreen(!stage.isFullScreen());
-        });
-
-        controller.minimizeBtn.setOnMouseClicked((ActionEvent) -> {
-            stage.setIconified(true);
-        });
-
-        controller.headerPane.addEventFilter(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                double crrX = mouseEvent.getScreenX();
-                double crrY = mouseEvent.getScreenY();
-                stage.setX(crrX - mousePressedX[0]);
-                stage.setY(crrY - mousePressedY[0]);
-            }
-        });
 
         stage.setOnCloseRequest(event -> {
             try {
@@ -71,7 +34,7 @@ public class Main extends Application {
         });
 
         controller.settingsBtn.setOnAction((ActionEvent) -> {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../resources/settings.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../resources/SettingsWindow.fxml"));
             Parent root1 = null;
             try {
                 root1 = (Parent) fxmlLoader.load();

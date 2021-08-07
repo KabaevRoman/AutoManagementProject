@@ -12,8 +12,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
-
-import java.awt.event.ActionEvent;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
@@ -46,12 +44,6 @@ public class MainWindowController implements Initializable {
     public TableColumn<SummaryTable, String> buttonsCol;
     @FXML
     public Pane headerPane;
-    @FXML
-    public Pane closeBtn;
-    @FXML
-    public Pane minimizeBtn;
-    @FXML
-    public Pane fullscreenBtn;
     @FXML
     public MenuItem settingsBtn;
     @FXML
@@ -130,6 +122,20 @@ public class MainWindowController implements Initializable {
         outMessage.flush();
     }
 
+    public void truncateDatabase(){
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Clear database data");
+        alert.setHeaderText("All data from database will be COMPLETELY DELETED! All auto WILL BE SET AS FREE");
+        Optional<ButtonType> option = alert.showAndWait();
+        if (option.get() == ButtonType.OK) {
+            sendMsg("#TRUNCATE");
+        }
+    }
+
+    public void resetVehicleState(){
+
+    }
+
     public void updateTable() {
         idSum.setCellValueFactory(new PropertyValueFactory<>("idSum"));
         name.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -162,15 +168,7 @@ public class MainWindowController implements Initializable {
             sqlQueryEmpty = false;
         });
         //TODO разделить сброс таблиц в базе данных
-        resetDatabaseBtn.setOnAction(ActionEvent -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Clear database data");
-            alert.setHeaderText("All data from database will be COMPLETELY DELETED! All auto WILL BE SET AS FREE");
-            Optional<ButtonType> option = alert.showAndWait();
-            if (option.get() == ButtonType.OK) {
-                sendMsg("#TRUNCATE");
-            }
-        });
+
         resetVehicleStateBtn.setOnAction(ActionEvent -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Reset vehicle state");

@@ -154,11 +154,15 @@ public class RegNumMaintenanceController implements Initializable {
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
-        outMessage.println("##session##end##");
-        outMessage.flush();
-        outMessage.close();
-        objectInputStream.close();
-        clientSocket.close();
+        try {
+            outMessage.println("##session##end##");
+            outMessage.flush();
+            outMessage.close();
+            objectInputStream.close();
+            clientSocket.close();
+        } catch (NullPointerException ex) {
+            System.out.println("Null pointer exception in shutdown(it's fine)");
+        }
     }
 
     @Override
