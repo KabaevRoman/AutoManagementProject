@@ -38,7 +38,7 @@ public class Main extends Application {
         Parent root = loader.load();
         stage.setTitle("Admin window");
         stage.setScene(new Scene(root, 1158, 700));
-        SummaryController controller = loader.getController();
+        MainWindowController controller = loader.getController();
         stage.initStyle(StageStyle.UNDECORATED);
         final double[] mousePressedX = new double[1];
         final double[] mousePressedY = new double[1];
@@ -52,7 +52,11 @@ public class Main extends Application {
         });
 
         controller.closeBtn.setOnMouseClicked((ActionEvent) -> {
-            stage.close();
+            try {
+                controller.shutdown();
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
         });
 
         controller.fullscreenBtn.setOnMouseClicked((ActionEvent) -> {
@@ -179,7 +183,7 @@ public class Main extends Application {
     public void stop() {
         System.out.println("Stopping application");
     }
-    //TODO make reconnect working
+    //TODO make reconnect working in all interface applications
 
     public static void main(String[] args) {
         launch(args);

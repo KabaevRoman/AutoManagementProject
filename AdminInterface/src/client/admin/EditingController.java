@@ -1,8 +1,6 @@
 package client.admin;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -116,7 +114,7 @@ public class EditingController implements Initializable {
     }
 
     public void initClient() throws IOException {
-        String[] serverParams = SummaryController.getSettings();
+        String[] serverParams = MainWindowController.getSettings();
         serverHost = serverParams[0];
         serverPort = Integer.parseInt(serverParams[1]);
         clientSocket = new Socket(serverHost, serverPort);

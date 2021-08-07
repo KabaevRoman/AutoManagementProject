@@ -1,5 +1,6 @@
 package server.pdo;
 
+import javafx.fxml.FXML;
 import server.DBConnect;
 import table.SummaryTable;
 import table.VehicleTable;
@@ -22,6 +23,7 @@ public class PDOClientHandler implements Runnable {
     private static int clients_count = 0;
     private boolean running = true;
     private final Integer key;
+
 
     public PDOClientHandler(Socket socket, PDOServer server, Integer key, DBConnect dbConnect) throws IOException, SQLException {
         clients_count++;
@@ -57,8 +59,13 @@ public class PDOClientHandler implements Runnable {
                             server.sendTableToAllPDOClients();
                             server.sendMsgToClientServer("#UPDATEUI");
                         }
+                        case "#RESETVEHSTATE" -> {
+                            resetVehicleState();
+                            server.sendTableToAllPDOClients();
+                            server.sendMsgToClientServer("#UPDATEUI");
+                        }
                         case "#DBMAINTENANCE" -> getAllRecords();
-                        case "#REGNUMMAINTENANCE" -> getRegNumRecords();
+                        case "#REGNUMMAINTENANCE" -> sendRegNumRecords();
                         case "#VEHICLESTATECHANGED" -> {
                             String reg_num = inMessage.nextLine();
                             String state = inMessage.nextLine();
@@ -74,7 +81,8 @@ public class PDOClientHandler implements Runnable {
                             server.sendMsgToClientServer("#UPDATEUI");
                         }
                         case "#DELETEVEHICLE" -> {
-                            deleteVehicle();
+                            String reg_num = inMessage.nextLine();
+                            deleteVehicle(reg_num);
                             server.sendTableToAllPDOClients();
                             server.sendMsgToClientServer("#UPDATEUI");
                         }
@@ -87,8 +95,12 @@ public class PDOClientHandler implements Runnable {
         }
     }
 
-    public void deleteVehicle() {
+    public int getNumOfAdminClients() {
+        return clients_count;
+    }
 
+    public void deleteVehicle(String reg_num) throws SQLException {
+        connection.createStatement().executeUpdate("DELETE FROM car_list WHERE reg_num='" + reg_num + "'");
     }
 
     private void addVehicle(String reg_num, String state) throws SQLException {
@@ -97,8 +109,7 @@ public class PDOClientHandler implements Runnable {
     }
 
 
-    //TODO оформить подключение к кастомным бд и настройку портов
-    //TODO сделать обнуление базы данных пре перезапуске сервера
+    //TODO сделать обнуление базы данных пре перезапуске сервера, а нужно ли ?
     public void close() throws IOException {
         running = false;
         clientSocket.close();
@@ -109,10 +120,13 @@ public class PDOClientHandler implements Runnable {
 
     public void resetData() throws SQLException {
         connection.createStatement().executeUpdate("TRUNCATE TABLE summary");
+    }
+
+    public void resetVehicleState() throws SQLException {
         connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 1");
     }
 
-    private void getRegNumRecords() throws SQLException, IOException {
+    private void sendRegNumRecords() throws SQLException, IOException {
         ArrayList<VehicleTable> arrayList = new ArrayList<>();
         ResultSet rs = connection.createStatement().executeQuery("SELECT*FROM car_list");
         while (rs.next()) {

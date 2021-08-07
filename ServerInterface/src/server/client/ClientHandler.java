@@ -1,5 +1,6 @@
 package server.client;
 
+import javafx.application.Platform;
 import server.DBConnect;
 import table.SummaryTable;
 
@@ -25,6 +26,7 @@ public class ClientHandler implements Runnable {
     public ClientHandler(Socket socket, Server server, Integer key, DBConnect dbConnect) {
         try {
             clients_count++;
+            Platform.runLater(() -> server.controller.numOfClientsLabel.setText(String.valueOf(clients_count)));
             this.key = key;
             this.server = server;
             this.clientSocket = socket;
@@ -36,7 +38,6 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    //TODO добавить аварийное обслуживание со стороны пдошников где они могут просматривать всю базу и редачить что надо
     @Override
     public void run() {
         while (running) {
@@ -83,6 +84,7 @@ public class ClientHandler implements Runnable {
         clientSocket.close();
         server.removeClient(key);
         clients_count--;
+        Platform.runLater(() -> server.controller.numOfClientsLabel.setText(String.valueOf(clients_count)));
         objectOutputStream.close();
     }
 
@@ -103,8 +105,10 @@ public class ClientHandler implements Runnable {
         connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 1 WHERE reg_num='" + gos_num + "'");
     }
 
+    public int getNumOfClients() {
+        return clients_count;
+    }
 
-    //TODO добавить количество машин, если человек возвращается должно ставиться фактическое время возвращения
     public void sendTable(boolean lock) throws IOException {
         objectOutputStream.writeBoolean(lock);
         objectOutputStream.flush();

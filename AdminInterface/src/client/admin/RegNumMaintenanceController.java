@@ -1,6 +1,5 @@
 package client.admin;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -8,12 +7,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
-import table.SummaryTable;
 import table.VehicleTable;
 
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
@@ -21,7 +17,6 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.Scanner;
 
 public class RegNumMaintenanceController implements Initializable {
     enum btnType {
@@ -99,14 +94,22 @@ public class RegNumMaintenanceController implements Initializable {
                             case "Busy" -> sendMsg("0");
                             case "On maintenance" -> sendMsg("2");
                         }
-                        updateTable();
+                        try {
+                            updateTableData();
+                        } catch (IOException | ClassNotFoundException ioException) {
+                            ioException.printStackTrace();
+                        }
                     });
                     case DELETE -> btn.setOnAction(e -> {
                         int cellIndex = t.getTableRow().getIndex();
                         regNumCellData = regNum.getCellData(cellIndex);
-                        sendMsg("#DEELETEVEHICLE");
+                        sendMsg("#DELETEVEHICLE");
                         sendMsg(regNumCellData);
-                        updateTable();
+                        try {
+                            updateTableData();
+                        } catch (IOException | ClassNotFoundException ioException) {
+                            ioException.printStackTrace();
+                        }
                     });
                 }
                 return t;
@@ -114,21 +117,24 @@ public class RegNumMaintenanceController implements Initializable {
         };
     }
 
-    public void updateTable() {
+    public void formTable() {
         regNum.setCellValueFactory(new PropertyValueFactory<>("regNum"));
         vehicleState.setCellValueFactory(new PropertyValueFactory<>("vehicleState"));
-
         vehicleState.setCellFactory(ComboBoxTableCell.forTableColumn(optionsList));
-
         vehicleState.setOnEditCommit(event -> {
             VehicleTable table = event.getRowValue();
             table.setVehicleState(event.getNewValue());
         });
-
         stateBox.getItems().setAll(optionsList);
         buttonsCol.setCellFactory(formCellFactoryBtn("Submit", btnType.SUBMIT));
         delButtonCol.setCellFactory(formCellFactoryBtn("Delete", btnType.DELETE));
         vehicleTable.setEditable(true);
+    }
+
+    public void updateTableData() throws IOException, ClassNotFoundException {
+        vehicleTable.getItems().clear();
+        sendMsg("#REGNUMMAINTENANCE");
+        arrayList = (ArrayList<VehicleTable>) objectInputStream.readObject();
         vehicleTable.setItems(FXCollections.observableArrayList(arrayList));
     }
 
@@ -138,7 +144,7 @@ public class RegNumMaintenanceController implements Initializable {
     }
 
     public void initClient() throws IOException {
-        String[] serverParams = SummaryController.getSettings();
+        String[] serverParams = MainWindowController.getSettings();
         serverHost = serverParams[0];
         serverPort = Integer.parseInt(serverParams[1]);
         clientSocket = new Socket(serverHost, serverPort);
@@ -159,12 +165,10 @@ public class RegNumMaintenanceController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
             initClient();
-            sendMsg("#REGNUMMAINTENANCE");
-            arrayList = (ArrayList<VehicleTable>) objectInputStream.readObject();
-            System.out.println(arrayList);
-        } catch (IOException | ClassNotFoundException | NullPointerException e) {
+            formTable();
+            updateTableData();
+        } catch (IOException | NullPointerException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        updateTable();
     }
 }
