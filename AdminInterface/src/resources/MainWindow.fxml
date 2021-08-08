@@ -13,13 +13,13 @@
         <TableView fx:id="pendingApprovalTable" prefHeight="701.0" prefWidth="1158.0">
             <columns>
                 <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="ID" />
-                <TableColumn fx:id="name" minWidth="6.0" prefWidth="84.05426788330078" text="Name" />
-                <TableColumn fx:id="departureTime" prefWidth="98.5" text="Departure time" />
-                <TableColumn fx:id="PDO" prefWidth="124.0" text="Admin" />
-                <TableColumn fx:id="note" prefWidth="94.0" text="Note" />
-                <TableColumn fx:id="gosNum" prefWidth="136.5" text="Government number" />
-                <TableColumn fx:id="arriveTime" prefWidth="146.5" text="Return time" />
-                <TableColumn fx:id="buttonsCol" prefWidth="220.29718017578125" />
+                <TableColumn fx:id="name" minWidth="6.0" prefWidth="150.5" text="Name" />
+                <TableColumn fx:id="departureTime" prefWidth="134.5" text="Departure time" />
+                <TableColumn fx:id="PDO" prefWidth="204.0" text="Admin" />
+                <TableColumn fx:id="note" prefWidth="274.0" text="Note" />
+                <TableColumn fx:id="gosNum" prefWidth="129.5" text="Government number" />
+                <TableColumn fx:id="arriveTime" prefWidth="144.5" text="Return time" />
+                <TableColumn fx:id="buttonsCol" />
             </columns>
         </TableView>
     </center>

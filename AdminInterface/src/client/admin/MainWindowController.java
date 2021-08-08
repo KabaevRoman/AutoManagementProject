@@ -99,7 +99,6 @@ public class MainWindowController implements Initializable {
             try {
                 while (running) {
                     try {
-                        //TODO подсос машин почему-то отвалился
                         carList = (ArrayList<String>) objectInputStream.readObject();
                         pendingApprovalList = (ArrayList<SummaryTable>) objectInputStream.readObject();
                     } catch (SocketException | EOFException ex) {

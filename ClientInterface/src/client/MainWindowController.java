@@ -137,11 +137,11 @@ public class MainWindowController implements Initializable {
         running = true;
         try {
             getSettings();
+            initClient();
             sendMsg("#INITTABLE");
         } catch (IOException | NullPointerException ex) {
             ex.printStackTrace();
         }
-        initClient();
         formTable();
         updateTableData();
 
@@ -153,8 +153,10 @@ public class MainWindowController implements Initializable {
         sendRequestBtn.setOnAction(e -> {
             String name = nameTextField.getText();
             String timeStr = dateTextField.getText();
+            String note = noteTextField.getText();
             sendMsg("#INSERT");
             sendMsg(name);
+            sendMsg(note);
             sendMsg(timeStr);
         });
     }

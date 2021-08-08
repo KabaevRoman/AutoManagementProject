@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+
+<BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.MainWindowController">
+    <center>
+        <TableView fx:id="pendingApprovalTable" prefHeight="701.0" prefWidth="1158.0">
+            <columns>
+                <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="ID" />
+                <TableColumn fx:id="name" minWidth="6.0" prefWidth="150.5" text="Name" />
+                <TableColumn fx:id="departureTime" prefWidth="134.5" text="Departure time" />
+                <TableColumn fx:id="PDO" prefWidth="204.0" text="Admin" />
+                <TableColumn fx:id="note" prefWidth="274.0" text="Note" />
+                <TableColumn fx:id="gosNum" prefWidth="129.5" text="Government number" />
+                <TableColumn fx:id="arriveTime" prefWidth="144.5" text="Return time" />
+                <TableColumn fx:id="buttonsCol" />
+            </columns>
+        </TableView>
+    </center>
+    <top>
+        <Pane fx:id="headerPane" prefHeight="32.0" prefWidth="1158.0" styleClass="titleBar" stylesheets="@style.css" BorderPane.alignment="CENTER">
+            <children>
+            <MenuBar layoutX="-9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="1167.0" stylesheets="@style.css">
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                    <MenuItem fx:id="settingsBtn" mnemonicParsing="false" text="Settings" />
+                        <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Reconnect" />
+                        <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Regestration numbers edit" />
+                  </items>
+                </Menu>
+                  <Menu mnemonicParsing="false" text="Emergency settings">
+                    <items>
+                      <MenuItem fx:id="resetDatabaseBtn" mnemonicParsing="false" text="Reset main table data" />
+                        <MenuItem fx:id="resetVehicleStateBtn" mnemonicParsing="false" text="Reset vehicle state" />
+                        <MenuItem fx:id="editDatabaseBtn" mnemonicParsing="false" text="Edit database data" />
+                    </items>
+                  </Menu>
+              </menus>
+            </MenuBar>
+            </children>
+        </Pane>
+    </top>
+</BorderPane>

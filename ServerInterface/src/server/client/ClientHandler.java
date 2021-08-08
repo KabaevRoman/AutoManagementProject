@@ -50,8 +50,9 @@ public class ClientHandler implements Runnable {
                     switch (clientMessage) {
                         case "#INSERT" -> {
                             String name = inMessage.nextLine();
+                            String note = inMessage.nextLine();
                             String time = inMessage.nextLine();
-                            insertRecording(name, time);
+                            insertRecording(name, note, time);
                             server.sendTableToAllClients();
                             server.sendMsgToPDOServer("#INSERT");
                         }
@@ -95,10 +96,10 @@ public class ClientHandler implements Runnable {
         objectOutputStream.close();
     }
 
-    public void insertRecording(String name, String time) throws SQLException {
-        connection.createStatement().executeUpdate("INSERT INTO summary(id,fio,departure_time,pdo) VALUES(" +
+    public void insertRecording(String name, String note, String time) throws SQLException {
+        connection.createStatement().executeUpdate("INSERT INTO summary(id,fio,departure_time,pdo,note) VALUES(" +
                 "'" + key + "'," +
-                "'" + name + "'" + "," + "'" + time + "'" + "," + "'" + "On approval" + "')");
+                "'" + name + "'" + "," + "'" + time + "'" + "," + "'" + "On approval" + "','" + note + "')");
     }
 
     public void changeAutoState() throws SQLException {

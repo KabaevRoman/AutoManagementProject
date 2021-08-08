@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+
+<BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="client.MainWindowController">
+    <center>
+        <AnchorPane prefHeight="638.0" prefWidth="1117.0" BorderPane.alignment="CENTER">
+            <children>
+                <HBox prefHeight="29.0" prefWidth="900.0">
+                    <children>
+                        <TextField fx:id="nameTextField"/>
+                        <TextField fx:id="noteTextField"/>
+                        <TextField fx:id="dateTextField"/>
+                        <Button fx:id="sendRequestBtn" mnemonicParsing="false" text="Send"/>
+                        <Label prefHeight="28.0" prefWidth="254.0" text="Number of free autos:">
+                            <HBox.margin>
+                                <Insets left="15.0"/>
+                            </HBox.margin>
+                        </Label>
+                        <Label fx:id="displayNumOfCars" prefHeight="29.0" prefWidth="47.0" text="Label">
+                            <HBox.margin>
+                                <Insets left="3.0"/>
+                            </HBox.margin>
+                        </Label>
+                    </children>
+                </HBox>
+                <TableView fx:id="summaryTable" layoutY="26.0" prefHeight="639.0" prefWidth="1156.0">
+                    <columns>
+                        <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="№ID"/>
+                        <TableColumn fx:id="name" minWidth="6.0" prefWidth="209.5" text="Name"/>
+                        <TableColumn fx:id="departureTime" prefWidth="120.5" text="Departure time"/>
+                        <TableColumn fx:id="PDO" prefWidth="162.0" text="Admin"/>
+                        <TableColumn fx:id="note" prefWidth="311.0" text="Note"/>
+                        <TableColumn fx:id="gosNum" prefWidth="143.5" text="Government number"/>
+                        <TableColumn fx:id="arriveTime" prefWidth="168.5" text="Return time"/>
+                    </columns>
+                </TableView>
+            </children>
+        </AnchorPane>
+    </center>
+    <top>
+        <Pane fx:id="headerPane" prefHeight="32.0" prefWidth="1158.0" styleClass="titleBar" stylesheets="@style.css"
+              BorderPane.alignment="CENTER">
+            <children>
+                <MenuBar layoutX="-9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="1167.0"
+                         stylesheets="@style.css">
+                    <menus>
+                        <Menu mnemonicParsing="false" text="File">
+                            <items>
+                                <MenuItem fx:id="settingsBtn" mnemonicParsing="false" text="Settings"/>
+                                <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Reconnect"/>
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+            </children>
+        </Pane>
+    </top>
+</BorderPane>
