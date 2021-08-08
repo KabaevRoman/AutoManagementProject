@@ -1,7 +1,7 @@
 package client.admin;
 
-import table.SummaryTable;
 import javafx.application.Platform;
+import table.SummaryTable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -12,6 +12,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
@@ -25,7 +26,7 @@ import static java.lang.System.exit;
 
 public class MainWindowController implements Initializable {
     @FXML
-    public TableView<SummaryTable> summaryTable;
+    public TableView<SummaryTable> pendingApprovalTable;
     @FXML
     public TableColumn<SummaryTable, String> idSum;
     @FXML
@@ -94,7 +95,7 @@ public class MainWindowController implements Initializable {
                     "to server, check your settings or contact administrator to know about server status");
             return;
         }
-        Thread thread = new Thread(() -> {
+        new Thread(() -> {
             try {
                 while (running) {
                     try {
@@ -104,17 +105,15 @@ public class MainWindowController implements Initializable {
                         System.out.println("socket was closed while listening(it's ok)");
                         //return;
                     }
-                    System.out.println(pendingApprovalList);
                     if (sqlQueryEmpty) {
-                        updateTable();
+                        setTableData();
                     }
                 }
                 System.out.println("Thread stopped");
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
-        });
-        thread.start();
+        }).start();
     }
 
     public void sendMsg(String msg) {
@@ -122,21 +121,27 @@ public class MainWindowController implements Initializable {
         outMessage.flush();
     }
 
-    public void truncateDatabase(){
+    public void truncateDatabase() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Clear database data");
-        alert.setHeaderText("All data from database will be COMPLETELY DELETED! All auto WILL BE SET AS FREE");
+        alert.setHeaderText("All data from database will be COMPLETELY DELETED!");
         Optional<ButtonType> option = alert.showAndWait();
         if (option.get() == ButtonType.OK) {
             sendMsg("#TRUNCATE");
         }
     }
 
-    public void resetVehicleState(){
-
+    public void resetVehicleState() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Reset vehicle states");
+        alert.setHeaderText("All vehicle states WILL BE SET AS FREE");
+        Optional<ButtonType> option = alert.showAndWait();
+        if (option.get() == ButtonType.OK) {
+            sendMsg("#RESETVEHSTATE");
+        }
     }
 
-    public void updateTable() {
+    public void initTable() {
         idSum.setCellValueFactory(new PropertyValueFactory<>("idSum"));
         name.setCellValueFactory(new PropertyValueFactory<>("name"));
         departureTime.setCellValueFactory(new PropertyValueFactory<>("departureTime"));
@@ -166,17 +171,6 @@ public class MainWindowController implements Initializable {
             SummaryTable table = event.getRowValue();
             table.setPDO(event.getNewValue());
             sqlQueryEmpty = false;
-        });
-        //TODO разделить сброс таблиц в базе данных
-
-        resetVehicleStateBtn.setOnAction(ActionEvent -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Reset vehicle state");
-            alert.setHeaderText("ALL VEHICLE states will be set to FREE");
-            Optional<ButtonType> option = alert.showAndWait();
-            if (option.get() == ButtonType.OK) {
-                sendMsg("#RESETVEHSTATE");
-            }
         });
 
         Callback<TableColumn<SummaryTable, String>, TableCell<SummaryTable, String>> cellFactoryBtn =
@@ -208,15 +202,19 @@ public class MainWindowController implements Initializable {
                             sendMsg(departureTimeCellData);
                             sendMsg(PDOCellData);
                             sqlQueryEmpty = true;
-                            updateTable();
+                            setTableData();
                         });
                         return t;
                     }
                 };
         buttonsCol.setCellFactory(cellFactoryBtn);
-        summaryTable.setEditable(true);
-        Platform.runLater(() -> summaryTable.setItems(FXCollections.observableArrayList(pendingApprovalList)));
+        pendingApprovalTable.setEditable(true);
+    }
 
+    public void setTableData() {
+        Platform.runLater(() -> pendingApprovalTable.getItems().clear());
+        Platform.runLater(() ->
+                pendingApprovalTable.setItems(FXCollections.observableArrayList(pendingApprovalList)));
     }
 
     public void shutdown() throws IOException, InterruptedException {
@@ -233,13 +231,13 @@ public class MainWindowController implements Initializable {
     public void reconnect() throws IOException, InterruptedException {
         Thread.sleep(100);
         running = false;
-        try{
-        outMessage.println("##session##end##");
-        outMessage.flush();
-        outMessage.close();
-        objectInputStream.close();
-        clientSocket.close();
-        }catch (NullPointerException ex){
+        try {
+            outMessage.println("##session##end##");
+            outMessage.flush();
+            outMessage.close();
+            objectInputStream.close();
+            clientSocket.close();
+        } catch (NullPointerException ex) {
             System.out.println("NIGGER");
         }
         objectInputStream = null;
@@ -274,18 +272,12 @@ public class MainWindowController implements Initializable {
         if (outMessage != null) {
             sendMsg("#INITPDOTABLE");
         }
-        updateTable();
+        initTable();
+        setTableData();
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         init();
-        reconnectBtn.setOnAction((ActionEvent) -> {
-            try {
-                reconnect();
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
     }
 }

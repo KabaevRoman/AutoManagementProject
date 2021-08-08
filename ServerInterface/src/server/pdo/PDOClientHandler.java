@@ -1,6 +1,5 @@
 package server.pdo;
 
-import javafx.fxml.FXML;
 import server.DBConnect;
 import table.SummaryTable;
 import table.VehicleTable;

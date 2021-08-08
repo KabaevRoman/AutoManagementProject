@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -105,7 +104,7 @@ public class MainWindowController implements Initializable {
     public void updateTableData() {
         summaryTable.getItems().clear();
         Platform.runLater(() -> displayNumOfCars.setText(String.valueOf(numOfCars)));
-        summaryTable.setItems(FXCollections.observableArrayList(arrayList));
+        Platform.runLater(() -> summaryTable.setItems(FXCollections.observableArrayList(arrayList)));
         if (lock) {
             Platform.runLater(this::onStartAlert);
             lock = false;

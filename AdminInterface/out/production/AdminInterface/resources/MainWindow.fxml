@@ -10,7 +10,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.MainWindowController">
     <center>
-        <TableView fx:id="summaryTable" prefHeight="701.0" prefWidth="1158.0">
+        <TableView fx:id="pendingApprovalTable" prefHeight="701.0" prefWidth="1158.0">
             <columns>
                 <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="ID" />
                 <TableColumn fx:id="name" minWidth="6.0" prefWidth="84.05426788330078" text="Name" />
@@ -32,7 +32,7 @@
                   <items>
                     <MenuItem fx:id="settingsBtn" mnemonicParsing="false" text="Settings" />
                         <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Reconnect" />
-                        <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Regestration numbers data edit" />
+                        <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Regestration numbers edit" />
                   </items>
                 </Menu>
                   <Menu mnemonicParsing="false" text="Emergency settings">

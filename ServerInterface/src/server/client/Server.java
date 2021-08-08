@@ -1,8 +1,6 @@
 package server.client;
-
 import server.DBConnect;
 import ui.Controller;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;

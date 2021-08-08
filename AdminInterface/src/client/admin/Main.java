@@ -10,7 +10,6 @@ import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -48,7 +47,7 @@ public class Main extends Application {
             }
             Stage prStage = new Stage();
             prStage.initModality(Modality.APPLICATION_MODAL);
-            prStage.setTitle("ABC");
+            prStage.setTitle("Settings window");
             SettingsController settingsController = fxmlLoader.getController();
 
             Popup popup = createPopup("settings saved", 665, 385);
@@ -71,6 +70,13 @@ public class Main extends Application {
 
         controller.resetDatabaseBtn.setOnAction(ActionEvent -> controller.truncateDatabase());
         controller.resetVehicleStateBtn.setOnAction(ActionEvent -> controller.resetVehicleState());
+        controller.reconnectBtn.setOnAction(ActionEvent -> {
+            try {
+                controller.reconnect();
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
         controller.editDatabaseBtn.setOnAction((ActionEvent) -> {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../../resources/EditingWindow.fxml"));
             Parent root1 = null;
@@ -145,7 +151,6 @@ public class Main extends Application {
     public void stop() {
         System.out.println("Stopping application");
     }
-    //TODO make reconnect working in all interface applications
 
     public static void main(String[] args) {
         launch(args);
