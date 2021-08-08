@@ -43,7 +43,7 @@ public class Main extends Application {
             }
             Stage prStage = new Stage();
             prStage.initModality(Modality.APPLICATION_MODAL);
-            prStage.setTitle("ABC");
+            prStage.setTitle("Settings window");
             SettingsController settingsController = fxmlLoader.getController();
 
             final Popup popup = new Popup();
