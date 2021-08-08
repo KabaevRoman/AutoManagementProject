@@ -1,6 +1,5 @@
 package server.pdo;
 
-import javafx.fxml.FXML;
 import server.DBConnect;
 import table.SummaryTable;
 import table.VehicleTable;
@@ -93,10 +92,6 @@ public class PDOClientHandler implements Runnable {
                 ex.printStackTrace();
             }
         }
-    }
-
-    public int getNumOfAdminClients() {
-        return clients_count;
     }
 
     public void deleteVehicle(String reg_num) throws SQLException {

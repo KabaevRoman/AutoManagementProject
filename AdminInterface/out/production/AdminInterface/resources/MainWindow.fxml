@@ -1,76 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.ToolBar?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.Pane?>
 
 <BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.MainWindowController">
     <center>
-        <TableView fx:id="summaryTable" prefHeight="701.0" prefWidth="1158.0">
+        <TableView fx:id="pendingApprovalTable" prefHeight="701.0" prefWidth="1158.0">
             <columns>
                 <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="ID" />
-                <TableColumn fx:id="name" minWidth="6.0" prefWidth="84.05426788330078" text="Name" />
-                <TableColumn fx:id="departureTime" prefWidth="98.5" text="Departure time" />
-                <TableColumn fx:id="PDO" prefWidth="124.0" text="Admin" />
-                <TableColumn fx:id="note" prefWidth="94.0" text="Note" />
-                <TableColumn fx:id="gosNum" prefWidth="136.5" text="Government number" />
-                <TableColumn fx:id="arriveTime" prefWidth="146.5" text="Return time" />
-                <TableColumn fx:id="buttonsCol" prefWidth="220.29718017578125" />
+                <TableColumn fx:id="name" minWidth="6.0" prefWidth="150.5" text="Name" />
+                <TableColumn fx:id="departureTime" prefWidth="134.5" text="Departure time" />
+                <TableColumn fx:id="PDO" prefWidth="204.0" text="Admin" />
+                <TableColumn fx:id="note" prefWidth="274.0" text="Note" />
+                <TableColumn fx:id="gosNum" prefWidth="129.5" text="Government number" />
+                <TableColumn fx:id="arriveTime" prefWidth="144.5" text="Return time" />
+                <TableColumn fx:id="buttonsCol" />
             </columns>
         </TableView>
     </center>
     <top>
         <Pane fx:id="headerPane" prefHeight="32.0" prefWidth="1158.0" styleClass="titleBar" stylesheets="@style.css" BorderPane.alignment="CENTER">
             <children>
-            <ToolBar layoutX="1005.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="160.0">
-               <items>
-                  <Pane fx:id="minimizeBtn" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="46.0" styleClass="minimizeBtn" stylesheets="@style.css">
-                     <children>
-                        <ImageView fitHeight="12.0" fitWidth="12.0" layoutX="17.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@min-k-30.png" />
-                           </image>
-                        </ImageView>
-                     </children>
-                  </Pane>
-                  <Pane fx:id="fullscreenBtn" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="46.0" styleClass="fullscreenBtn" stylesheets="@style.css">
-                     <children>
-                        <ImageView fitHeight="12.0" fitWidth="12.0" layoutX="17.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@max-k-30.png" />
-                           </image>
-                        </ImageView>
-                     </children>
-                  </Pane>
-                  <Pane fx:id="closeBtn" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="46.0" styleClass="closeBtn" stylesheets="@style.css">
-                     <children>
-                        <ImageView fitHeight="12.0" fitWidth="12.0" layoutX="17.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@close-k-30.png" />
-                           </image>
-                        </ImageView>
-                     </children>
-                     <padding>
-                        <Insets left="-5.0" />
-                     </padding>
-                  </Pane>
-               </items>
-            </ToolBar>
-            <MenuBar layoutX="-9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="1022.0" stylesheets="@style.css">
+            <MenuBar layoutX="-9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="1167.0" stylesheets="@style.css">
               <menus>
                 <Menu mnemonicParsing="false" text="File">
                   <items>
                     <MenuItem fx:id="settingsBtn" mnemonicParsing="false" text="Settings" />
                         <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Reconnect" />
-                        <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Regestration numbers data edit" />
+                        <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Regestration numbers edit" />
                   </items>
                 </Menu>
                   <Menu mnemonicParsing="false" text="Emergency settings">

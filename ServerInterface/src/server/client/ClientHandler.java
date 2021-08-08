@@ -21,10 +21,12 @@ public class ClientHandler implements Runnable {
     private Socket clientSocket;
     private static int clients_count = 0;
     private boolean running = true;
+    private boolean saveToggled;
     private Integer key;
 
-    public ClientHandler(Socket socket, Server server, Integer key, DBConnect dbConnect) {
+    public ClientHandler(Socket socket, Server server, Integer key, DBConnect dbConnect, boolean saveToggled) {
         try {
+            this.saveToggled = saveToggled;
             clients_count++;
             Platform.runLater(() -> server.controller.numOfClientsLabel.setText(String.valueOf(clients_count)));
             this.key = key;
@@ -48,8 +50,9 @@ public class ClientHandler implements Runnable {
                     switch (clientMessage) {
                         case "#INSERT" -> {
                             String name = inMessage.nextLine();
+                            String note = inMessage.nextLine();
                             String time = inMessage.nextLine();
-                            insertRecording(name, time);
+                            insertRecording(name, note, time);
                             server.sendTableToAllClients();
                             server.sendMsgToPDOServer("#INSERT");
                         }
@@ -74,6 +77,11 @@ public class ClientHandler implements Runnable {
         try {
             connection.createStatement().executeUpdate(
                     "UPDATE summary SET return_time =" + "'" + date + "'" + " WHERE id=" + key);
+            if (saveToggled) {
+                connection.createStatement().executeUpdate(
+                        "INSERT INTO archieve(old_id,fio,departure_time,car_status,return_time,pdo, note,gos_num)" +
+                                "SELECT id,fio,departure_time,car_status,return_time,pdo, note,gos_num from summary WHERE id=" + key);
+            }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -88,10 +96,10 @@ public class ClientHandler implements Runnable {
         objectOutputStream.close();
     }
 
-    public void insertRecording(String name, String time) throws SQLException {
-        connection.createStatement().executeUpdate("INSERT INTO summary(id,fio,departure_time,pdo) VALUES(" +
+    public void insertRecording(String name, String note, String time) throws SQLException {
+        connection.createStatement().executeUpdate("INSERT INTO summary(id,fio,departure_time,pdo,note) VALUES(" +
                 "'" + key + "'," +
-                "'" + name + "'" + "," + "'" + time + "'" + "," + "'" + "On approval" + "')");
+                "'" + name + "'" + "," + "'" + time + "'" + "," + "'" + "On approval" + "','" + note + "')");
     }
 
     public void changeAutoState() throws SQLException {
@@ -103,10 +111,6 @@ public class ClientHandler implements Runnable {
         }
         System.out.println(gos_num);
         connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 1 WHERE reg_num='" + gos_num + "'");
-    }
-
-    public int getNumOfClients() {
-        return clients_count;
     }
 
     public void sendTable(boolean lock) throws IOException {

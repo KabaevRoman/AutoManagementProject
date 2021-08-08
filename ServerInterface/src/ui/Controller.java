@@ -1,10 +1,7 @@
 package ui;
 
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import server.DBConnect;
 import server.client.Server;
 import server.pdo.PDOServer;
@@ -26,6 +23,8 @@ public class Controller implements Initializable {
     public Button saveBtn;
     public Button relaunchBtn;
     public Label numOfClientsLabel;
+    public RadioButton toggleSaveOn;
+    public RadioButton toggleSaveOff;
 
     private String dbAddressString = "";
     private String dbNameString = "";
@@ -34,7 +33,7 @@ public class Controller implements Initializable {
     private String portAdminString = "0";
     private String dbPasswordString = "";
     private DBConnect dbConnect;
-    private Server serverUser;
+    public Server serverUser;
     private PDOServer serverPdo;
 
 

@@ -9,6 +9,8 @@ import javafx.scene.control.Label;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
+import java.awt.event.ActionEvent;
+
 public class Main extends Application {
 
     @Override
@@ -39,7 +41,14 @@ public class Main extends Application {
                     },
                     2000
             );
-
+        });
+        controller.toggleSaveOn.setOnAction(ActionEvent -> {
+            controller.serverUser.saveToggledMode(controller.toggleSaveOn.isSelected());
+            System.out.println(controller.toggleSaveOn.isSelected());
+        });
+        controller.toggleSaveOff.setOnAction(ActionEvent -> {
+            controller.serverUser.saveToggledMode(controller.toggleSaveOn.isSelected());
+            System.out.println(controller.toggleSaveOn.isSelected());
         });
         primaryStage.show();
     }
