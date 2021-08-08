@@ -52,4 +52,64 @@ In case of mis entered data you can edit database table by pressing edit databas
 # Example of the server interface
 ![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.22.07.png)
 In server interface window you can setup *parameteres of your network*. If remember all requests in database is set, *every query* sent by user and responded by admin *will be coppied into separate table*, in case you need to keep the records for some kind of reports. Number of clients show how many clients,(not admins) are currently connected to server.
+# Database structure
+### Database:
+CREATE DATABASE "UMTSIK"
+    WITH 
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'C'
+    LC_CTYPE = 'C'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+### Archieve table:
+CREATE TABLE public.archieve
+(
+    id integer NOT NULL DEFAULT nextval('archieve_id_seq'::regclass),
+    old_id integer,
+    fio text COLLATE pg_catalog."default" NOT NULL,
+    departure_time time without time zone NOT NULL,
+    car_status integer,
+    return_time time without time zone,
+    pdo text COLLATE pg_catalog."default" NOT NULL,
+    note text COLLATE pg_catalog."default",
+    gos_num text COLLATE pg_catalog."default",
+    CONSTRAINT archieve_pk PRIMARY KEY (id)
+)
 
+TABLESPACE pg_default;
+
+ALTER TABLE public.archieve
+    OWNER to postgres;
+### Vehicle table:
+CREATE TABLE public.car_list
+(
+    car_state integer NOT NULL,
+    reg_num text COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT reg_num_pk PRIMARY KEY (reg_num)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.car_list
+    OWNER to postgres;
+
+Summary table:
+
+CREATE TABLE public.summary
+(
+    id integer NOT NULL DEFAULT nextval('summary_id_seq'::regclass),
+    fio text COLLATE pg_catalog."default" NOT NULL,
+    departure_time time without time zone NOT NULL,
+    car_status integer,
+    return_time time without time zone,
+    pdo text COLLATE pg_catalog."default" NOT NULL,
+    note text COLLATE pg_catalog."default",
+    gos_num text COLLATE pg_catalog."default",
+    CONSTRAINT summary_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.summary
+    OWNER to postgres;
