@@ -108,12 +108,16 @@ public class MainWindowController implements Initializable {
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
-        outMessage.println("##session##end##");
-        outMessage.flush();
-        running = false;
-        objectInputStream.close();
-        outMessage.close();
-        clientSocket.close();
+        try {
+            outMessage.println("##session##end##");
+            outMessage.flush();
+            running = false;
+            objectInputStream.close();
+            outMessage.close();
+            clientSocket.close();
+        }catch (NullPointerException ex){
+            ex.printStackTrace();
+        }
         exit(0);//временное решение
     }
 
@@ -195,7 +199,7 @@ public class MainWindowController implements Initializable {
         }
         sc.close();
     }
-
+    //TODO if close without the connection exception will be thrown fix it
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         init();
