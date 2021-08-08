@@ -54,6 +54,7 @@ In case of mis entered data you can edit database table by pressing edit databas
 In server interface window you can setup *parameteres of your network*. If remember all requests in database is set, *every query* sent by user and responded by admin *will be coppied into separate table*, in case you need to keep the records for some kind of reports. Number of clients show how many clients,(not admins) are currently connected to server.
 # Database structure
 ### Database:
+```
 CREATE DATABASE "UMTSIK"
     WITH 
     OWNER = postgres
@@ -62,7 +63,9 @@ CREATE DATABASE "UMTSIK"
     LC_CTYPE = 'C'
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1;
+```
 ### Archieve table:
+```
 CREATE TABLE public.archieve
 (
     id integer NOT NULL DEFAULT nextval('archieve_id_seq'::regclass),
@@ -81,7 +84,9 @@ TABLESPACE pg_default;
 
 ALTER TABLE public.archieve
     OWNER to postgres;
+```
 ### Vehicle table:
+```
 CREATE TABLE public.car_list
 (
     car_state integer NOT NULL,
@@ -113,3 +118,4 @@ TABLESPACE pg_default;
 
 ALTER TABLE public.summary
     OWNER to postgres;
+```
