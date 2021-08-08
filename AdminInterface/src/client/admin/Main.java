@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -22,7 +23,7 @@ public class Main extends Application {
         Label label = new Label(popupText);
         label.setMinHeight(50);
         label.setMinWidth(15);
-        label.setStyle("-fx-background-color: grey;-fx-background-radius: 5px;-fx-text-fill:white");
+        label.setStyle("-fx-min-height:60;-fx-min-width:30;-fx-background-color: grey;-fx-background-radius: 5px;-fx-text-fill:white");
         popup.getContent().add(label);
         popup.setX(PosX);
         popup.setY(PosY);

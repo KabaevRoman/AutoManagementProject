@@ -12,7 +12,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
-
+//TODO when server is disconnected = endless spam fix it
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
@@ -99,6 +99,7 @@ public class MainWindowController implements Initializable {
             try {
                 while (running) {
                     try {
+                        //TODO подсос машин почему-то отвалился
                         carList = (ArrayList<String>) objectInputStream.readObject();
                         pendingApprovalList = (ArrayList<SummaryTable>) objectInputStream.readObject();
                     } catch (SocketException | EOFException ex) {
@@ -150,7 +151,6 @@ public class MainWindowController implements Initializable {
         gosNum.setCellValueFactory(new PropertyValueFactory<>("gosNum"));
         arriveTime.setCellValueFactory(new PropertyValueFactory<>("arriveTime"));
         PDO.setCellFactory(ComboBoxTableCell.forTableColumn(optionsList));
-        gosNum.setCellFactory(ComboBoxTableCell.forTableColumn(FXCollections.observableList(carList)));
         note.setCellFactory(TextFieldTableCell.forTableColumn());
         arriveTime.setCellFactory(TextFieldTableCell.forTableColumn());
         departureTime.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -215,16 +215,21 @@ public class MainWindowController implements Initializable {
         Platform.runLater(() -> pendingApprovalTable.getItems().clear());
         Platform.runLater(() ->
                 pendingApprovalTable.setItems(FXCollections.observableArrayList(pendingApprovalList)));
+        Platform.runLater(() -> gosNum.setCellFactory(ComboBoxTableCell.forTableColumn(FXCollections.observableList(carList))));
     }
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
         running = false;
-        outMessage.println("##session##end##");
-        outMessage.flush();
-        outMessage.close();
-        objectInputStream.close();
-        clientSocket.close();
+        try {
+            outMessage.println("##session##end##");
+            outMessage.flush();
+            outMessage.close();
+            objectInputStream.close();
+            clientSocket.close();
+        } catch (NullPointerException ex) {
+            System.out.println("Null pointer occurred");
+        }
         exit(0);
     }
 
@@ -266,11 +271,9 @@ public class MainWindowController implements Initializable {
         running = true;
         try {
             initClient();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (outMessage != null) {
             sendMsg("#INITPDOTABLE");
+        } catch (IOException | InterruptedException | NullPointerException e) {
+            e.printStackTrace();
         }
         initTable();
         setTableData();

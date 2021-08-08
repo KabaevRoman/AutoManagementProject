@@ -40,16 +40,11 @@ public class MainWindowController implements Initializable {
     public TextField noteTextField;
     public Button sendRequestBtn;
     public Pane headerPane;
-    public Pane closeBtn;
-    public Pane minimizeBtn;
-    public Pane fullscreenBtn;
     public MenuItem settingsBtn;
     public MenuItem reconnectBtn;
     private ArrayList<SummaryTable> arrayList;
     private int numOfCars;
     private boolean running;
-    //private static final String SERVER_HOST = "localhost";
-    //private static final int SERVER_PORT = 3443;
     private String serverHost;
     private int serverPort;
     private Socket clientSocket;
@@ -142,13 +137,11 @@ public class MainWindowController implements Initializable {
         running = true;
         try {
             getSettings();
-        } catch (IOException ex) {
+            sendMsg("#INITTABLE");
+        } catch (IOException | NullPointerException ex) {
             ex.printStackTrace();
         }
         initClient();
-        if (outMessage != null) {
-            sendMsg("#INITTABLE");
-        }
         formTable();
         updateTableData();
 

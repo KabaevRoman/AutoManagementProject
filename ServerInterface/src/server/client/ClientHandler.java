@@ -21,10 +21,12 @@ public class ClientHandler implements Runnable {
     private Socket clientSocket;
     private static int clients_count = 0;
     private boolean running = true;
+    private boolean saveToggled;
     private Integer key;
 
-    public ClientHandler(Socket socket, Server server, Integer key, DBConnect dbConnect) {
+    public ClientHandler(Socket socket, Server server, Integer key, DBConnect dbConnect, boolean saveToggled) {
         try {
+            this.saveToggled = saveToggled;
             clients_count++;
             Platform.runLater(() -> server.controller.numOfClientsLabel.setText(String.valueOf(clients_count)));
             this.key = key;
@@ -74,6 +76,11 @@ public class ClientHandler implements Runnable {
         try {
             connection.createStatement().executeUpdate(
                     "UPDATE summary SET return_time =" + "'" + date + "'" + " WHERE id=" + key);
+            if (saveToggled) {
+                connection.createStatement().executeUpdate(
+                        "INSERT INTO archieve(old_id,fio,departure_time,car_status,return_time,pdo, note,gos_num)" +
+                                "SELECT id,fio,departure_time,car_status,return_time,pdo, note,gos_num from summary WHERE id=" + key);
+            }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

@@ -21,7 +21,13 @@ public class Server extends Thread {
     private ServerSocket ss;
     private Socket pdoServerInfoSocket;
     private final DBConnect dbConnect;
+    private boolean saveToggled;
+
     public Controller controller;
+
+    public void saveToggledMode(boolean saveToggled){
+        this.saveToggled = saveToggled;
+    }
 
     public Server(int port, DBConnect dbConnect, Controller controller) throws IOException {
         this.controller = controller;
@@ -73,7 +79,7 @@ public class Server extends Thread {
             } catch (IOException e) {
                 System.out.println("socket was closed while listening");
             }
-            ClientHandler client = new ClientHandler(clientSocket, this, key, dbConnect);
+            ClientHandler client = new ClientHandler(clientSocket, this, key, dbConnect, saveToggled);
             clients.put(key, client);
             key++;
             new Thread(client).start();
