@@ -119,3 +119,6 @@ TABLESPACE pg_default;
 ALTER TABLE public.summary
     OWNER to postgres;
 ```
+### Builded jar executables in ru-version branch
+Builded for mac os, not yet for windows.
+In order to save settings for work launch jar files with terminal java -jar NeededName.jar
