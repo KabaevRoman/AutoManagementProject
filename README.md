@@ -98,9 +98,9 @@ TABLESPACE pg_default;
 
 ALTER TABLE public.car_list
     OWNER to postgres;
-
+```
 Summary table:
-
+```
 CREATE TABLE public.summary
 (
     id integer NOT NULL DEFAULT nextval('summary_id_seq'::regclass),
