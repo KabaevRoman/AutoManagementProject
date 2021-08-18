@@ -22,7 +22,7 @@ public class SettingsController implements Initializable {
     public Button saveSettings;
 
     public void getSettings() throws FileNotFoundException {
-        File file = new File("settings.txt");
+        File file = new File("AdminSettings.txt");
         Scanner sc = new Scanner(file);
         if (sc.hasNext()) {
             ipTextField.setText(sc.nextLine());
@@ -33,12 +33,12 @@ public class SettingsController implements Initializable {
         sc.close();
     }
 
-    void save() {
+    public void save() {
         String ipAddress = ipTextField.getText();
         String port = portTextField.getText();
         FileWriter myWriter;
         try {
-            myWriter = new FileWriter("settings.txt");
+            myWriter = new FileWriter("AdminSettings.txt");
             myWriter.write(ipAddress + "\n");
             myWriter.write(port);
             myWriter.close();

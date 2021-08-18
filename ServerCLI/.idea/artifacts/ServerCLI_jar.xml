@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ServerCLI:jar">
+    <output-path>$PROJECT_DIR$/../Релизные файлы</output-path>
+    <root id="archive" name="ServerCLI.jar">
+      <element id="module-output" name="ServerCLI" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/postgresql-42.2.23.jar" path-in-jar="/" />
+      <element id="library" level="project" name="postgresql-42.2.23" />
+    </root>
+  </artifact>
+</component>

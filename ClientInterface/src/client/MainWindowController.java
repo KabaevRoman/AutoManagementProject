@@ -1,5 +1,10 @@
 package client;
 
+import custom.Error.ErrorHandler;
+import javafx.fxml.FXML;
+import javafx.scene.media.AudioClip;
+import javafx.stage.Stage;
+import table.InterfaceData;
 import table.SummaryTable;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -20,28 +25,47 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
 import static java.lang.System.exit;
 
+//TODO при перезапуске тоже сделать чтобы отправлялся форс квит
 public class MainWindowController implements Initializable {
+    @FXML
     public TableView<SummaryTable> summaryTable;
+    @FXML
     public TableColumn<SummaryTable, String> idSum;
+    @FXML
     public TableColumn<SummaryTable, String> name;
+    @FXML
     public TableColumn<SummaryTable, String> departureTime;
+    @FXML
     public TableColumn<SummaryTable, String> PDO;
+    @FXML
     public TableColumn<SummaryTable, String> note;
+    @FXML
     public TableColumn<SummaryTable, String> gosNum;
+    @FXML
     public TableColumn<SummaryTable, String> arriveTime;
+    @FXML
     public Label displayNumOfCars;
+    @FXML
     public TextField nameTextField;
+    @FXML
     public TextField dateTextField;
+    @FXML
     public TextField noteTextField;
+    @FXML
     public Button sendRequestBtn;
+    @FXML
     public Pane headerPane;
+    @FXML
     public MenuItem settingsBtn;
+    @FXML
     public MenuItem reconnectBtn;
+
     private ArrayList<SummaryTable> arrayList;
     private int numOfCars;
     private boolean running;
@@ -50,7 +74,9 @@ public class MainWindowController implements Initializable {
     private Socket clientSocket;
     private PrintWriter outMessage;
     private ObjectInputStream objectInputStream;
-    private Boolean lock = false;
+    private int lock = 0;//1-accepted,2-refused
+    private boolean busy;
+    private String gos_num;
 
     public void initClient() {
         arrayList = new ArrayList<>();
@@ -59,24 +85,32 @@ public class MainWindowController implements Initializable {
             outMessage = new PrintWriter(clientSocket.getOutputStream());
             objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
         } catch (IOException ex) {
-            ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Connection error!", "Error while connecting " +
-                    "to server, check your settings or contact administrator to know about server status");
+            ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
+                    "Ошибка во время подключения к серверу, проверьте настройки подключения или обратитесь к " +
+                            "администратору чтобы узнать статус сервера ");
             return;
         }
         Thread thread = new Thread(() -> {
-            try {
-                while (running) {
-                    lock = objectInputStream.readBoolean();
-                    System.out.println(lock);
-                    numOfCars = objectInputStream.readInt();
+            while (running) {
+                try {
+                    //lock = objectInputStream.readInt();
+                    //System.out.println(lock);
+                    //numOfCars = objectInputStream.readInt();
+                    InterfaceData interfaceData = (InterfaceData) objectInputStream.readObject();
+                    lock = interfaceData.getLock();
+                    numOfCars = interfaceData.getNumOfCars();
+                    gos_num = interfaceData.getRegNum();
                     arrayList = (ArrayList<SummaryTable>) objectInputStream.readObject();
                     System.out.println(arrayList);
-                    //formTable();
                     updateTableData();
+                } catch (IOException | ClassNotFoundException e) {
+                    Platform.runLater(() -> ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
+                            "Вы были отключены от сервера"));
+                    e.printStackTrace();
+                    break;
                 }
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
             }
+
         });
         thread.start();
     }
@@ -100,22 +134,32 @@ public class MainWindowController implements Initializable {
         summaryTable.getItems().clear();
         Platform.runLater(() -> displayNumOfCars.setText(String.valueOf(numOfCars)));
         Platform.runLater(() -> summaryTable.setItems(FXCollections.observableArrayList(arrayList)));
-        if (lock) {
-            Platform.runLater(this::onStartAlert);
-            lock = false;
+        switch (lock) {
+            case 1:
+                Platform.runLater(() -> onStartAlert(1, "Заявка одобрена!",
+                        "Как только вы вернетесь на рабочее место," +
+                                " нажмите клавишу ок, это зафиксирует время прибытия\nНомер вашей машины: "));
+                break;
+            case 2:
+                Platform.runLater(() -> onStartAlert(2, "Заявка не одобрена!",
+                        "Нажмите OK чтобы закрыть программу"));
         }
+        lock = 0;
     }
 
-    public void shutdown() throws IOException, InterruptedException {
+    public void shutdown(boolean force) throws IOException, InterruptedException {
         Thread.sleep(100);
         try {
+            if (force) {
+                outMessage.println("#FORCEQUIT");
+            }
             outMessage.println("##session##end##");
             outMessage.flush();
             running = false;
             objectInputStream.close();
             outMessage.close();
             clientSocket.close();
-        }catch (NullPointerException ex){
+        } catch (NullPointerException ex) {
             ex.printStackTrace();
         }
         exit(0);//временное решение
@@ -131,13 +175,14 @@ public class MainWindowController implements Initializable {
             objectInputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {
-            System.out.println("NIGGER");
+            ex.printStackTrace();
         }
         objectInputStream = null;
         init();
     }
 
     public void init() {
+        busy = false;
         running = true;
         try {
             getSettings();
@@ -151,42 +196,69 @@ public class MainWindowController implements Initializable {
 
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         dateTextField.setTextFormatter(new TextFormatter<>(new DateTimeStringConverter(format)));
-        nameTextField.setPromptText("Name");
-        noteTextField.setPromptText("Some note");
-        dateTextField.setPromptText("10:00");
         sendRequestBtn.setOnAction(e -> {
             String name = nameTextField.getText();
             String timeStr = dateTextField.getText();
             String note = noteTextField.getText();
-            sendMsg("#INSERT");
-            sendMsg(name);
-            sendMsg(note);
-            sendMsg(timeStr);
+            if (!busy) {
+                if (name.equals("") || timeStr.equals("")) {
+                    ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка ввода", "Вы не ввели имя либо время отправления");
+                    busy = false;
+                } else {
+                    sendMsg("#INSERT");
+                    sendMsg(name);
+                    sendMsg(note);
+                    sendMsg(timeStr);
+                    busy = true;
+                }
+            } else {
+                ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Пользовательская ошибка",
+                        "вы уже отправили запрос");
+            }
         });
     }
 
-    public void onStartAlert() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Acceptance of return");
-        alert.setHeaderText(null);
-        alert.setContentText("As soon as the trip is completed, you will need to click on the OK button to lock the " +
-                "return time and release the car at the database");
-        alert.initModality(Modality.APPLICATION_MODAL);
-        alert.showAndWait();
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        sendMsg("#FREEAUTO");
-        sendMsg(dtf.format(now));
-        System.out.println(dtf.format(now));
-        try {
-            shutdown();
-        } catch (IOException | InterruptedException ex) {
-            System.out.println("Some error occurred while closing application");
+    public void onStartAlert(int code, String title, String contentText) {
+        new AudioClip(Objects.requireNonNull(MainWindowController.class.getResource("/notification.wav")).toString()).play();
+        if (code == 1) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText(null);
+            alert.setTitle(title);
+            alert.setContentText(contentText + gos_num);
+            alert.initModality(Modality.APPLICATION_MODAL);
+            Stage stage = (Stage) summaryTable.getScene().getWindow();
+            stage.hide();
+            alert.showAndWait();
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+            LocalDateTime now = LocalDateTime.now();
+            sendMsg("#FREEAUTO");
+            sendMsg(dtf.format(now));
+            System.out.println(dtf.format(now));
+            try {
+                shutdown(false);
+            } catch (IOException | InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        } else if (code == 2) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText(null);
+            alert.setTitle(title);
+            alert.setContentText(contentText);
+            alert.initModality(Modality.APPLICATION_MODAL);
+            Stage stage = (Stage) summaryTable.getScene().getWindow();
+            stage.hide();
+            alert.showAndWait();
+            sendMsg("#ARCHIVE");
+            try {
+                shutdown(false);
+            } catch (IOException | InterruptedException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
     public void getSettings() throws IOException {
-        File file = new File("settings.txt");
+        File file = new File("ClientSettings.txt");
         if (!file.exists()) {
             file.createNewFile();
         }
@@ -199,16 +271,10 @@ public class MainWindowController implements Initializable {
         }
         sc.close();
     }
-    //TODO if close without the connection exception will be thrown fix it
+
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         init();
-        reconnectBtn.setOnAction((ActionEvent) -> {
-            try {
-                reconnect();
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
     }
 }

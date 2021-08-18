@@ -1,6 +1,9 @@
 package client.admin;
 
 import javafx.application.Platform;
+import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
+import javafx.scene.media.AudioClip;
 import table.SummaryTable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,15 +15,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
-//TODO when server is disconnected = endless spam fix it
+
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.Scanner;
+import java.util.*;
 
 import static java.lang.System.exit;
 
@@ -57,6 +57,10 @@ public class MainWindowController implements Initializable {
     public MenuItem editRegNumBtn;
     @FXML
     public MenuItem resetVehicleStateBtn;
+    @FXML
+    public MenuItem archiveBtn;
+    @FXML
+    public MenuItem updateBtn;
 
 
     private ArrayList<SummaryTable> pendingApprovalList;
@@ -73,13 +77,9 @@ public class MainWindowController implements Initializable {
     private String PDOCellData;
     private String idSumCellData;
     private Boolean connected;
-    private final ObservableList<String> optionsList = FXCollections.observableArrayList("Accepted", "Refused", "On approval");
+    private final ObservableList<String> optionsList = FXCollections.observableArrayList("Одобрено", "Отказ", "На согласовании");
 
     public void initClient() throws IOException, InterruptedException {
-        String[] serverParams = getSettings();
-        serverHost = serverParams[0];
-        serverPort = Integer.parseInt(serverParams[1]);
-
         carList = new ArrayList<>();
         pendingApprovalList = new ArrayList<>();
         gosNumCellData = "";
@@ -91,22 +91,28 @@ public class MainWindowController implements Initializable {
             connected = true;
         } catch (IOException e) {
             connected = false;
-            ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Connection error!", "Error while connecting " +
-                    "to server, check your settings or contact administrator to know about server status");
+            ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
+                    "Ошибка во время подключения к серверу, проверьте настройки подключения или обратитесь к " +
+                            "администратору чтобы узнать статус сервера ");
             return;
         }
         new Thread(() -> {
             try {
                 while (running) {
                     try {
+                        if (objectInputStream.readBoolean()) {
+                            new AudioClip(Objects.requireNonNull(MainWindowController.class.getResource("/notification.wav")).toString()).play();
+                        }
                         carList = (ArrayList<String>) objectInputStream.readObject();
                         pendingApprovalList = (ArrayList<SummaryTable>) objectInputStream.readObject();
                     } catch (SocketException | EOFException ex) {
+                        Platform.runLater(() -> ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
+                                "Вы были отключены от сервера"));
                         System.out.println("socket was closed while listening(it's ok)");
-                        //return;
+                        break;
                     }
                     if (sqlQueryEmpty) {
-                        setTableData();
+                        updateTableData();
                     }
                 }
                 System.out.println("Thread stopped");
@@ -123,8 +129,8 @@ public class MainWindowController implements Initializable {
 
     public void truncateDatabase() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Clear database data");
-        alert.setHeaderText("All data from database will be COMPLETELY DELETED!");
+        alert.setTitle("Очистить базу данных");
+        alert.setHeaderText("Все данные из таблицы с запросами будут ПОЛНОСТЬЮ УДАЛЕНЫ");
         Optional<ButtonType> option = alert.showAndWait();
         if (option.get() == ButtonType.OK) {
             sendMsg("#TRUNCATE");
@@ -133,8 +139,8 @@ public class MainWindowController implements Initializable {
 
     public void resetVehicleState() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Reset vehicle states");
-        alert.setHeaderText("All vehicle states WILL BE SET AS FREE");
+        alert.setTitle("Освободить статусы авто");
+        alert.setHeaderText("Статус всех машин будет установлен на свободный");
         Optional<ButtonType> option = alert.showAndWait();
         if (option.get() == ButtonType.OK) {
             sendMsg("#RESETVEHSTATE");
@@ -151,7 +157,6 @@ public class MainWindowController implements Initializable {
         arriveTime.setCellValueFactory(new PropertyValueFactory<>("arriveTime"));
         PDO.setCellFactory(ComboBoxTableCell.forTableColumn(optionsList));
         note.setCellFactory(TextFieldTableCell.forTableColumn());
-        arriveTime.setCellFactory(TextFieldTableCell.forTableColumn());
         departureTime.setCellFactory(TextFieldTableCell.forTableColumn());
 
         gosNum.setOnEditCommit(event -> {
@@ -176,7 +181,7 @@ public class MainWindowController implements Initializable {
                 new Callback<>() {
                     @Override
                     public TableCell<SummaryTable, String> call(final TableColumn<SummaryTable, String> param) {
-                        final Button btn = new Button("Submit");
+                        final Button btn = new Button("Отправить");
                         TableCell<SummaryTable, String> t = new TableCell<>() {
                             @Override
                             public void updateItem(String item, boolean empty) {
@@ -201,7 +206,7 @@ public class MainWindowController implements Initializable {
                             sendMsg(departureTimeCellData);
                             sendMsg(PDOCellData);
                             sqlQueryEmpty = true;
-                            setTableData();
+                            updateTableData();
                         });
                         return t;
                     }
@@ -210,7 +215,7 @@ public class MainWindowController implements Initializable {
         pendingApprovalTable.setEditable(true);
     }
 
-    public void setTableData() {
+    public void updateTableData() {
         Platform.runLater(() -> pendingApprovalTable.getItems().clear());
         Platform.runLater(() ->
                 pendingApprovalTable.setItems(FXCollections.observableArrayList(pendingApprovalList)));
@@ -227,9 +232,16 @@ public class MainWindowController implements Initializable {
             objectInputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {
-            System.out.println("Null pointer occurred");
+            ex.printStackTrace();
         }
         exit(0);
+    }
+
+    public void setSettings() throws IOException {
+        Settings settings = new Settings();
+        settings.getSettings();
+        serverPort = settings.getServerPort();
+        serverHost = settings.getServerHost();
     }
 
     public void reconnect() throws IOException, InterruptedException {
@@ -242,40 +254,24 @@ public class MainWindowController implements Initializable {
             objectInputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {
-            System.out.println("NIGGER");
+            System.out.println("null pointer in reconnect");
         }
         objectInputStream = null;
         init();
-    }
-
-    public static String[] getSettings() throws IOException {
-        File file = new File("settings.txt");
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-        String[] serverParams = new String[2];
-        Scanner sc = new Scanner(file);
-        if (sc.hasNext()) {
-            serverParams[0] = sc.nextLine();
-        }
-        if (sc.hasNext()) {
-            serverParams[1] = sc.nextLine();
-        }
-        sc.close();
-        return serverParams;
     }
 
     public void init() {
         sqlQueryEmpty = true;
         running = true;
         try {
+            setSettings();
             initClient();
             sendMsg("#INITPDOTABLE");
         } catch (IOException | InterruptedException | NullPointerException e) {
             e.printStackTrace();
         }
         initTable();
-        setTableData();
+        updateTableData();
     }
 
     @Override

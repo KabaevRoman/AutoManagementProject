@@ -14,11 +14,12 @@ public class ErrorHandler {
     public static void handleError(ErrorCode err) {
         switch (err) {
             case SERVERSIDE_ERROR:
-                onStartAlert(Alert.AlertType.ERROR, "Serverside Error!", "Error while connecting to server");
+                onStartAlert(Alert.AlertType.ERROR, "Ошибка на стороне сервера!", "Произошла ошибка во время подключения к серверу");
                 break;
             case INPUT_ERROR:
-                errorAlert(Alert.AlertType.ERROR, "User error!",
-                        "Wrong input, data will not be used, retry inputting correct data");
+                errorAlert(Alert.AlertType.ERROR, "Пользовательская ошибка",
+                        "Некорректный ввод, данные не будут использованы, попробуйте ввести корректные данные");
+                break;
         }
     }
 

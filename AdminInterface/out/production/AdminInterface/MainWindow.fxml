@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+
+<BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.MainWindowController">
+    <center>
+        <TableView fx:id="pendingApprovalTable" prefHeight="701.0" prefWidth="1158.0">
+            <columns>
+                <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="№п/п" />
+                <TableColumn fx:id="name" minWidth="6.0" prefWidth="150.5" text="ФИО" />
+                <TableColumn fx:id="departureTime" prefWidth="134.5" text="Время отправления" />
+                <TableColumn fx:id="PDO" prefWidth="204.0" text="ПДО" />
+                <TableColumn fx:id="note" prefWidth="244.0" text="Заметки" />
+                <TableColumn fx:id="gosNum" prefWidth="129.0" text="Гос. номер" />
+                <TableColumn fx:id="arriveTime" prefWidth="140.0" text="Время возвращения" />
+                <TableColumn fx:id="buttonsCol" prefWidth="116.0" />
+            </columns>
+        </TableView>
+    </center>
+    <top>
+        <Pane fx:id="headerPane" prefHeight="32.0" prefWidth="1158.0" styleClass="titleBar" stylesheets="@style.css" BorderPane.alignment="CENTER">
+            <children>
+            <MenuBar layoutX="-9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="1167.0" stylesheets="@style.css">
+              <menus>
+                <Menu mnemonicParsing="false" text="Файл">
+                  <items>
+                    <MenuItem fx:id="settingsBtn" mnemonicParsing="false" text="Настройки" />
+                        <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Переподключиться" />
+                        <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Редактор гос. номеров" />
+                        <MenuItem fx:id="archiveBtn" mnemonicParsing="false" text="Архив" />
+                        <MenuItem fx:id="updateBtn" mnemonicParsing="false" text="Обновить" />
+                  </items>
+                </Menu>
+                  <Menu mnemonicParsing="false" text="Экстренные настройки">
+                    <items>
+                      <MenuItem fx:id="resetDatabaseBtn" mnemonicParsing="false" text="Сброс данных в таблице" />
+                        <MenuItem fx:id="resetVehicleStateBtn" mnemonicParsing="false" text="Сброс состояния гос. номеров" />
+                        <MenuItem fx:id="editDatabaseBtn" mnemonicParsing="false" text="Редактировать БД" />
+                    </items>
+                  </Menu>
+              </menus>
+            </MenuBar>
+            </children>
+        </Pane>
+    </top>
+</BorderPane>

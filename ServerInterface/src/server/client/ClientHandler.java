@@ -2,6 +2,7 @@ package server.client;
 
 import javafx.application.Platform;
 import server.DBConnect;
+import table.InterfaceData;
 import table.SummaryTable;
 
 import java.io.IOException;
@@ -44,47 +45,90 @@ public class ClientHandler implements Runnable {
     public void run() {
         while (running) {
             try {
-                if (inMessage.hasNext()) {
-                    String clientMessage = inMessage.nextLine();
-                    System.out.println(clientMessage);
-                    switch (clientMessage) {
-                        case "#INSERT" -> {
-                            String name = inMessage.nextLine();
-                            String note = inMessage.nextLine();
-                            String time = inMessage.nextLine();
-                            insertRecording(name, note, time);
-                            server.sendTableToAllClients();
-                            server.sendMsgToPDOServer("#INSERT");
+                if (inMessage != null) {
+                    if (inMessage.hasNext()) {
+                        String clientMessage = inMessage.nextLine();
+                        System.out.println(clientMessage);
+                        switch (clientMessage) {
+                            case "#INSERT": {
+                                String name = inMessage.nextLine();
+                                String note = inMessage.nextLine();
+                                String time = inMessage.nextLine();
+                                insertRecording(name, note, time);
+                                server.sendTableToAllClients();
+                                server.sendMsgToPDOServer("#INSERT");
+                                break;
+                            }
+                            case "#FREEAUTO": {
+                                changeAutoState();
+                                String date = inMessage.nextLine();
+                                saveReturnTime(date);
+                                if (saveToggled)
+                                    saveToArchive();
+                                break;
+                            }
+                            case "#INITTABLE":
+                                sendTable(0);
+                                break;
+                            case "##session##end##":
+                                this.close();
+                                break;
+                            case "#ARCHIVE":
+                                if (saveToggled) {
+                                    saveToArchive();
+                                }
+                                break;
+                            case "#FORCEQUIT":
+                                removeClientFromDB();
+                                server.sendTableToAllClients();
+                                server.sendMsgToPDOServer("#UPDATECONTENT");
+                                break;
+                            case "#GOSNUM":
+                                sendRegNum();
+                                break;
                         }
-                        case "#FREEAUTO" -> {
-                            changeAutoState();
-                            String date = inMessage.nextLine();
-                            saveReturnTime(date);
-                        }
-                        case "#INITTABLE" -> sendTable(false);
-                        case "##session##end##" -> this.close();
                     }
                 }
             } catch (NullPointerException | IOException | SQLException ex) {
                 ex.printStackTrace();
-                System.out.println("Error in switch");
             }
         }
     }
 
-    private void saveReturnTime(String date) {
+    private void removeClientFromDB() throws SQLException {
+        connection.createStatement().executeUpdate("DELETE FROM summary WHERE id=" + key);
+    }
+
+    //TODO проверить перезапуск сервера вроде с ним что-то не так
+    private void saveReturnTime(String date) throws SQLException {
         System.out.println("UPDATE summary SET return_time =" + date + " WHERE id=" + key);
         try {
             connection.createStatement().executeUpdate(
                     "UPDATE summary SET return_time =" + "'" + date + "'" + " WHERE id=" + key);
-            if (saveToggled) {
-                connection.createStatement().executeUpdate(
-                        "INSERT INTO archieve(old_id,fio,departure_time,car_status,return_time,pdo, note,gos_num)" +
-                                "SELECT id,fio,departure_time,car_status,return_time,pdo, note,gos_num from summary WHERE id=" + key);
-            }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public String getRegNum() throws SQLException {
+        ResultSet rs = connection.createStatement().executeQuery(
+                "select gos_num from summary where id = " + "'" + key + "'");
+        String gos_num = null;
+        while (rs.next()) {
+            gos_num = rs.getString("gos_num");
+        }
+        return gos_num;
+    }
+
+    public void sendRegNum() throws SQLException, IOException {
+        String gos_num = getRegNum();
+        objectOutputStream.writeObject(gos_num);
+    }
+
+    public void saveToArchive() throws SQLException {
+        connection.createStatement().executeUpdate(
+                "INSERT INTO archive(old_id,fio,departure_time,car_status,return_time,pdo, note,gos_num)" +
+                        "SELECT id,fio,departure_time,car_status,return_time,pdo, note,gos_num from summary WHERE id=" + key);
     }
 
     public void close() throws IOException {
@@ -99,24 +143,16 @@ public class ClientHandler implements Runnable {
     public void insertRecording(String name, String note, String time) throws SQLException {
         connection.createStatement().executeUpdate("INSERT INTO summary(id,fio,departure_time,pdo,note) VALUES(" +
                 "'" + key + "'," +
-                "'" + name + "'" + "," + "'" + time + "'" + "," + "'" + "On approval" + "','" + note + "')");
+                "'" + name + "'" + "," + "'" + time + "'" + "," + "'" + "На согласовании" + "','" + note + "')");
     }
 
     public void changeAutoState() throws SQLException {
-        ResultSet rs = connection.createStatement().executeQuery(
-                "select gos_num from summary where id = " + "'" + key + "'");
-        String gos_num = null;
-        while (rs.next()) {
-            gos_num = rs.getString("gos_num");
-        }
+        String gos_num = getRegNum();
         System.out.println(gos_num);
         connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 1 WHERE reg_num='" + gos_num + "'");
     }
 
-    public void sendTable(boolean lock) throws IOException {
-        objectOutputStream.writeBoolean(lock);
-        objectOutputStream.flush();
-
+    public void sendTable(int lock) throws IOException {
         int numOfAvailableCars = 0;
         try {
             ResultSet rs = connection.createStatement().executeQuery("select count(*) from car_list where car_state = 1");
@@ -126,10 +162,16 @@ public class ClientHandler implements Runnable {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-        System.out.println(numOfAvailableCars);
-        objectOutputStream.writeInt(numOfAvailableCars);
-        objectOutputStream.flush();
 
+        String gos_num = "";
+        try {
+            gos_num = getRegNum();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        InterfaceData interfaceData = new InterfaceData(lock, numOfAvailableCars, gos_num);
+        objectOutputStream.writeObject(interfaceData);
+        objectOutputStream.flush();
         ArrayList<SummaryTable> arrayList = new ArrayList<>();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT*FROM summary");

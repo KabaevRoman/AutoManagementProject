@@ -1,6 +1,8 @@
 package server.client;
+
 import server.DBConnect;
 import ui.Controller;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -10,11 +12,11 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Server extends Thread {
-    private final Map<Integer, ClientHandler> clients = new HashMap<>();
-    private final ServerSocket serverSocket;
+    private Map<Integer, ClientHandler> clients;
+    private ServerSocket serverSocket;
     private Socket clientSocket;
-    private boolean running = true;
-    private Integer key = 0;
+    private boolean running;
+    private Integer key;
     private PrintWriter outMessage;
     private Scanner inMessage;
 
@@ -25,14 +27,18 @@ public class Server extends Thread {
 
     public Controller controller;
 
-    public void saveToggledMode(boolean saveToggled){
+    public void saveToggledMode(boolean saveToggled) {
         this.saveToggled = saveToggled;
+        System.out.println(this.saveToggled);
     }
 
     public Server(int port, DBConnect dbConnect, Controller controller) throws IOException {
         this.controller = controller;
-        serverSocket = new ServerSocket(port);
+        this.running = true;
+        this.clients = new HashMap<>();
+        this.serverSocket = new ServerSocket(port);
         this.dbConnect = dbConnect;
+        this.key = 0;
         System.out.println("Client server launched");
 
         new Thread(() -> {
@@ -44,26 +50,34 @@ public class Server extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            while (true) {
+            while (running) {
                 if (inMessage.hasNext()) {
                     String clientMessage = inMessage.nextLine();
-                    System.out.println("NOT MAIN: " + clientMessage);
+                    System.out.println("CLIENT SERVER: " + clientMessage);
                     switch (clientMessage) {
-                        case "#UPDATE" -> {
+                        case "#UPDATE": {
                             try {
                                 sendTableToAllClients();
+                                String pdo = inMessage.nextLine();
                                 String id = inMessage.nextLine();
-                                clients.get(Integer.parseInt(id)).sendTable(true);
+                                if (pdo.equals("Одобрено"))
+                                    clients.get(Integer.parseInt(id)).sendTable(1);
+                                else if (pdo.equals("Отказ"))
+                                    clients.get(Integer.parseInt(id)).sendTable(2);
+                                else
+                                    clients.get(Integer.parseInt(id)).sendTable(0);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                            break;
                         }
-                        case "#UPDATEUI" -> {
+                        case "#UPDATEUI": {
                             try {
                                 sendTableToAllClients();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                            break;
                         }
                     }
                 }
@@ -77,7 +91,7 @@ public class Server extends Thread {
             try {
                 clientSocket = serverSocket.accept();
             } catch (IOException e) {
-                System.out.println("socket was closed while listening");
+                e.printStackTrace();
             }
             ClientHandler client = new ClientHandler(clientSocket, this, key, dbConnect, saveToggled);
             clients.put(key, client);
@@ -88,19 +102,31 @@ public class Server extends Thread {
 
     public void close() throws IOException {
         running = false;
-        if (clientSocket != null) {
+        if (nullChecker(clients))
+            clients.clear();
+        if (nullChecker(serverSocket))
+            serverSocket.close();
+        if (nullChecker(clientSocket))
             clientSocket.close();
-        }
-        clearClients();
+        if (nullChecker(outMessage))
+            outMessage.close();
+        if (nullChecker(inMessage))
+            inMessage.close();
+        if (nullChecker(ss))
+            ss.close();
+        if (nullChecker(pdoServerInfoSocket))
+            pdoServerInfoSocket.close();
         System.out.println("Сервер остановлен");
-        serverSocket.close();
-        ss.close();
-        pdoServerInfoSocket.close();
+
+    }
+
+    public boolean nullChecker(Object object) {
+        return object != null;
     }
 
     public void sendTableToAllClients() throws IOException {
         for (Map.Entry<Integer, ClientHandler> client : clients.entrySet()) {
-            client.getValue().sendTable(false);
+            client.getValue().sendTable(0);
         }
     }
 
@@ -115,7 +141,4 @@ public class Server extends Thread {
         outMessage.flush();
     }
 
-    public void clearClients() {
-        clients.clear();
-    }
 }

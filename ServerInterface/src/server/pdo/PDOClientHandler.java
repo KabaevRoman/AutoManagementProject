@@ -1,6 +1,7 @@
 package server.pdo;
 
 import server.DBConnect;
+import table.ArchiveTable;
 import table.SummaryTable;
 import table.VehicleTable;
 
@@ -11,6 +12,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class PDOClientHandler implements Runnable {
@@ -42,56 +44,130 @@ public class PDOClientHandler implements Runnable {
                     String clientMessage = inMessage.nextLine();
                     System.out.println(clientMessage);
                     switch (clientMessage) {
-                        case "#UPDATE" -> {
+                        case "#UPDATE": {
                             String id = inMessage.nextLine();
                             String gos_num = inMessage.nextLine();
                             String departure_time = inMessage.nextLine();
                             String pdo = inMessage.nextLine();
                             updateRecording(id, gos_num, departure_time, pdo);
-                            server.sendTableToAllPDOClients();
+                            server.sendTableToAllPDOClients(false);
                             server.sendMsgToClientServer("#UPDATE");
+                            server.sendMsgToClientServer(pdo);
                             server.sendMsgToClientServer(id);
+                            break;
                         }
-                        case "#INITPDOTABLE" -> sendTable();
-                        case "#TRUNCATE" -> {
-                            resetData();
-                            server.sendTableToAllPDOClients();
+                        case "#INITPDOTABLE":
+                            sendTable(false);
+                            break;
+                        case "#TRUNCATE": {
+                            server.resetData();
+                            server.sendTableToAllPDOClients(false);
                             server.sendMsgToClientServer("#UPDATEUI");
+                            break;
                         }
-                        case "#RESETVEHSTATE" -> {
+                        case "#RESETVEHSTATE": {
                             resetVehicleState();
-                            server.sendTableToAllPDOClients();
+                            server.sendTableToAllPDOClients(false);
                             server.sendMsgToClientServer("#UPDATEUI");
+                            break;
                         }
-                        case "#DBMAINTENANCE" -> getAllRecords();
-                        case "#REGNUMMAINTENANCE" -> sendRegNumRecords();
-                        case "#VEHICLESTATECHANGED" -> {
+                        case "#GETARCHIVE": {
+                            getArchive();
+                            break;
+                        }
+                        case "#DBMAINTENANCE":
+                            getAllRecords();
+                            break;
+                        case "#REGNUMMAINTENANCE":
+                            sendRegNumRecords();
+                            break;
+                        case "#VEHICLESTATECHANGED": {
                             String reg_num = inMessage.nextLine();
                             String state = inMessage.nextLine();
                             updateRegNum(reg_num, state);
-                            server.sendTableToAllPDOClients();
+                            //server.sendTableToAllPDOClients(false);//вот тут может быть косяк если ты меняешь стейты
                             server.sendMsgToClientServer("#UPDATEUI");
+                            break;
                         }
-                        case "#ADDVEHICLE" -> {
+                        case "#ADDVEHICLE": {
                             String reg_num = inMessage.nextLine();
                             String state = inMessage.nextLine();
                             addVehicle(reg_num, state);
-                            server.sendTableToAllPDOClients();
+                            //server.sendTableToAllPDOClients(false); ломает взаимодействие с редактором
                             server.sendMsgToClientServer("#UPDATEUI");
+                            break;
                         }
-                        case "#DELETEVEHICLE" -> {
+                        case "#DELETEVEHICLE": {
                             String reg_num = inMessage.nextLine();
                             deleteVehicle(reg_num);
-                            server.sendTableToAllPDOClients();
+                            //server.sendTableToAllPDOClients(false);
                             server.sendMsgToClientServer("#UPDATEUI");
+                            break;
                         }
-                        case "##session##end##" -> this.close();
+                        case "#REGNUMMAINTENANCECLOSE": {
+                            server.sendTableToAllPDOClients(false);
+                            break;
+                        }
+                        case "##session##end##":
+                            this.close();
+                            break;
+                        case "#EDIT":
+                            String id = inMessage.nextLine();
+                            String departure_time = inMessage.nextLine();
+                            String return_time = inMessage.nextLine();
+                            String pdo = inMessage.nextLine();
+                            String note = inMessage.nextLine();
+                            String gos_num = inMessage.nextLine();
+                            emergencyUpdate(id, departure_time, return_time, pdo, note, gos_num);
+                            server.sendTableToAllPDOClients(false);
+                            server.sendMsgToClientServer("#UPDATEUI");
                     }
                 }
             } catch (NullPointerException | IOException | SQLException ex) {
                 ex.printStackTrace();
             }
         }
+    }
+
+    private void emergencyUpdate(String id, String departure_time, String return_time, String pdo, String note, String gos_num) throws SQLException {
+        System.out.println(departure_time);
+        System.out.println(return_time);
+        if (return_time.equals("null") || return_time.equals("")) {
+            connection.createStatement().executeUpdate("UPDATE summary SET departure_time = '" + departure_time +
+                    "',gos_num='" + gos_num +
+                    "',note='" + note +
+                    "',return_time=NULL" +
+                    ",pdo='" + pdo +
+                    "' WHERE id='" + id + "'"
+            );
+        } else {
+            connection.createStatement().executeUpdate("UPDATE summary SET departure_time = '" + departure_time +
+                    "',gos_num='" + gos_num +
+                    "',note='" + note +
+                    "',return_time='" + return_time +
+                    "',pdo='" + pdo +
+                    "' WHERE id='" + id + "'"
+            );
+        }
+    }
+
+
+    private void getArchive() throws SQLException, IOException {
+        ArrayList<ArchiveTable> arrayList = new ArrayList<>();
+        ResultSet rs = connection.createStatement().executeQuery("SELECT*FROM archive");
+        while (rs.next()) {
+            arrayList.add(new ArchiveTable(
+                    rs.getString("id"),
+                    rs.getString("old_id"),
+                    rs.getString("fio"),
+                    rs.getString("departure_time"),
+                    rs.getString("pdo"),
+                    rs.getString("note"),
+                    rs.getString("gos_num"),
+                    rs.getString("return_time")));
+        }
+        objectOutputStream.writeObject(arrayList);
+        objectOutputStream.flush();
     }
 
     public void deleteVehicle(String reg_num) throws SQLException {
@@ -103,8 +179,6 @@ public class PDOClientHandler implements Runnable {
                 "'" + state + "')");
     }
 
-
-    //TODO сделать обнуление базы данных пре перезапуске сервера, а нужно ли ?
     public void close() throws IOException {
         running = false;
         clientSocket.close();
@@ -113,9 +187,9 @@ public class PDOClientHandler implements Runnable {
         objectOutputStream.close();
     }
 
-    public void resetData() throws SQLException {
-        connection.createStatement().executeUpdate("TRUNCATE TABLE summary");
-    }
+//    public void resetData() throws SQLException {
+//        connection.createStatement().executeUpdate("TRUNCATE TABLE summary");
+//    }
 
     public void resetVehicleState() throws SQLException {
         connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 1");
@@ -127,8 +201,8 @@ public class PDOClientHandler implements Runnable {
         while (rs.next()) {
             arrayList.add(new VehicleTable(
                             rs.getString("reg_num"),
-                            rs.getInt("car_state") == 1 ? "Free" :
-                                    rs.getInt("car_state") == 0 ? "Busy" : "On maintenance"
+                            rs.getInt("car_state") == 1 ? "Свободна" :
+                                    rs.getInt("car_state") == 0 ? "Занята" : "На обслуживании"
                             //rs.getString("car_state")
                     )
             );
@@ -172,7 +246,10 @@ public class PDOClientHandler implements Runnable {
     }
 
 
-    public void sendTable() throws IOException {
+    public void sendTable(boolean notify) throws IOException {
+        objectOutputStream.writeBoolean(notify);
+        objectOutputStream.flush();
+
         ArrayList<String> carList = new ArrayList<>();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT reg_num FROM car_list where car_state = 1");
@@ -188,7 +265,7 @@ public class PDOClientHandler implements Runnable {
 
         ArrayList<SummaryTable> arrayList = new ArrayList<>();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT*FROM summary where pdo = 'On approval'");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT*FROM summary where pdo = 'На согласовании'");
             while (rs.next()) {
                 arrayList.add(new SummaryTable(
                         rs.getString("id"),

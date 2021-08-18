@@ -2,12 +2,13 @@ package server.pdo;
 
 
 import server.DBConnect;
-import ui.Controller;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,10 +17,10 @@ import java.util.Scanner;
 public class PDOServer extends Thread {
 
     private Integer key = 0;
-    private final Map<Integer, PDOClientHandler> clientsPDO = new HashMap<>();
+    private final Map<Integer, PDOClientHandler> clientsPDO;
     private Socket clientSocket;
     private final ServerSocket serverSocket;
-    private boolean running = true;
+    private boolean running;
     private Socket pdoInfoSocket;
     private PrintWriter outMessage;
     private Scanner inMessage;
@@ -27,6 +28,8 @@ public class PDOServer extends Thread {
 
     public PDOServer(int port, DBConnect dbConnect) throws IOException {
         serverSocket = new ServerSocket(port);
+        clientsPDO = new HashMap<>();
+        running = true;
         this.dbConnect = dbConnect;
         System.out.println("Admin server launched!");
 
@@ -38,17 +41,27 @@ public class PDOServer extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            while (true) {
+            while (running) {
                 if (inMessage.hasNext()) {
                     String clientMessage = inMessage.nextLine();
-                    System.out.println("NOT MAIN:" + clientMessage);
+                    System.out.println("PDO SERVER: " + clientMessage);
                     switch (clientMessage) {
-                        case "#INSERT", "#FREEAUTO" -> {
+                        case "#INSERT": {
                             try {
-                                sendTableToAllPDOClients();
+                                sendTableToAllPDOClients(true);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                            break;
+                        }
+                        case "#FREEAUTO":
+                        case "#UPDATECONTENT": {
+                            try {
+                                sendTableToAllPDOClients(false);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            break;
                         }
                     }
                 }
@@ -63,27 +76,47 @@ public class PDOServer extends Thread {
                 clientSocket = serverSocket.accept();
                 PDOClientHandler client = new PDOClientHandler(clientSocket, this, key, dbConnect);
                 clientsPDO.put(key, client);
+                System.out.println(clientsPDO);
                 key++;
                 new Thread(client).start();
-            } catch (IOException | SQLException e) {
-                System.out.println("socket was closed while listening it is fine");
+            } catch (IOException | SQLException | NullPointerException e) {
+                e.printStackTrace();
             }
         }
     }
 
-    public void close() throws IOException {
+    public void close() throws IOException, SQLException {
         running = false;
-        if (clientSocket != null) {
+        if (nullChecker(clientsPDO))
+            clientsPDO.clear();
+        if (nullChecker(clientSocket))
             clientSocket.close();
-        }
-        this.clearClients();
+        if (nullChecker(serverSocket))
+            serverSocket.close();
+        if (nullChecker(pdoInfoSocket))
+            pdoInfoSocket.close();
+        if (nullChecker(outMessage))
+            outMessage.close();
+        if (nullChecker(inMessage))
+            inMessage.close();
         System.out.println("Server closed");
-        serverSocket.close();
+
     }
 
-    public void sendTableToAllPDOClients() throws IOException {
+    public boolean nullChecker(Object object) {
+        return object != null;
+    }
+
+    public void resetData() throws SQLException {
+        Connection connection = dbConnect.getConnection();
+        connection.createStatement().executeUpdate("TRUNCATE TABLE summary");
+
+    }
+
+
+    public void sendTableToAllPDOClients(boolean notify) throws IOException {
         for (Map.Entry<Integer, PDOClientHandler> client : clientsPDO.entrySet()) {
-            client.getValue().sendTable();
+            client.getValue().sendTable(notify);
         }
     }
 
@@ -98,7 +131,4 @@ public class PDOServer extends Thread {
         outMessage.flush();
     }
 
-    public void clearClients() {
-        clientsPDO.clear();
-    }
 }

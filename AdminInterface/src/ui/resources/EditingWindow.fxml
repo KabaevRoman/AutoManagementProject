@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+
+<TableView fx:id="summaryTable" prefHeight="701.0" prefWidth="1158.0" xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.EditingController">
+    <columns>
+        <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="№п/п" />
+        <TableColumn fx:id="name" minWidth="6.0" prefWidth="130.5" text="ФИО" />
+        <TableColumn fx:id="departureTime" prefWidth="203.5" text="Время отправления" />
+        <TableColumn fx:id="PDO" prefWidth="108.0" text="ПДО" />
+        <TableColumn fx:id="note" prefWidth="240.0" text="Заметки" />
+        <TableColumn fx:id="gosNum" prefWidth="118.5" text="Гос. номер" />
+        <TableColumn fx:id="arriveTime" prefWidth="189.5" text="Время возвращения" />
+        <TableColumn fx:id="buttonsCol" prefWidth="127.0" />
+    </columns>
+</TableView>

@@ -1,13 +1,9 @@
 package client;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.stage.Popup;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,7 +22,7 @@ public class SettingsController implements Initializable {
     public Button saveSettings;
 
     public void getSettings() throws FileNotFoundException {
-        File file = new File("settings.txt");
+        File file = new File("ClientSettings.txt");
         Scanner sc = new Scanner(file);
         if (sc.hasNext()) {
             ipTextField.setText(sc.nextLine());
@@ -41,7 +37,7 @@ public class SettingsController implements Initializable {
         String port = portTextField.getText();
         FileWriter myWriter;
         try {
-            myWriter = new FileWriter("settings.txt");
+            myWriter = new FileWriter("ClientSettings.txt");
             myWriter.write(ipAddress + "\n");
             myWriter.write(port);
             myWriter.close();
