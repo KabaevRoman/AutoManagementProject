@@ -10,10 +10,12 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
+import msg.ServiceMsg;
 import table.SummaryTable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
@@ -48,7 +50,7 @@ public class EditingController implements Initializable {
     private String arriveTimeCellData;
 
     private Socket clientSocket;
-    private PrintWriter outMessage;
+    private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
     private String serverHost;
     private int serverPort;
@@ -120,13 +122,19 @@ public class EditingController implements Initializable {
                             arriveTimeCellData = arriveTime.getCellData(cellIndex);
                             PDOCellData = PDO.getCellData(cellIndex);
                             System.out.println(departureTimeCellData + gosNumCellData + PDOCellData);
-                            sendMsg("#EDIT");
-                            sendMsg(idSumCellData);
-                            sendMsg(departureTimeCellData);
-                            sendMsg(arriveTimeCellData);
-                            sendMsg(PDOCellData);
-                            sendMsg(noteCellData);
-                            sendMsg(gosNumCellData);
+                            ServiceMsg serviceMsg = new ServiceMsg();
+                            serviceMsg.command = "#EDIT";
+                            serviceMsg.parameters.put("id", idSumCellData);
+                            serviceMsg.parameters.put("departure_time", departureTimeCellData);
+                            serviceMsg.parameters.put("arrive_time", arriveTimeCellData);
+                            serviceMsg.parameters.put("pdo", PDOCellData);
+                            serviceMsg.parameters.put("note", noteCellData);
+                            serviceMsg.parameters.put("gos_num", gosNumCellData);
+                            try {
+                                sendMsg(serviceMsg);
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
                             updateTable();
                         });
                         return t;
@@ -137,30 +145,36 @@ public class EditingController implements Initializable {
         summaryTable.setItems(FXCollections.observableArrayList(arrayList));
     }
 
-    public void setSettings() throws IOException {
+    public void getSettings() throws IOException {
         Settings settings = new Settings();
         settings.getSettings();
         serverPort = settings.getServerPort();
         serverHost = settings.getServerHost();
     }
 
-    public void sendMsg(String msg) {
-        outMessage.println(msg);
-        outMessage.flush();
+    public void sendMsg(ServiceMsg serviceMsg) throws IOException {
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
+    }
+
+    public void sendMsg(String command) throws IOException {
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = command;
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
     }
 
     public void initClient() throws IOException {
-        setSettings();
+        getSettings();
         clientSocket = new Socket(serverHost, serverPort);
-        outMessage = new PrintWriter(clientSocket.getOutputStream());
+        objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
-        outMessage.println("##session##end##");
-        outMessage.flush();
-        outMessage.close();
+        sendMsg("##session##end##");
+        objectOutputStream.close();
         objectInputStream.close();
         clientSocket.close();
     }

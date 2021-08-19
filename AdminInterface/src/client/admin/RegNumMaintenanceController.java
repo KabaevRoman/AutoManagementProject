@@ -8,6 +8,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
+import msg.AdminMsg;
+import msg.ServiceMsg;
 import table.VehicleTable;
 
 import java.io.*;
@@ -46,7 +48,8 @@ public class RegNumMaintenanceController implements Initializable {
 
 
     private Socket clientSocket;
-    private PrintWriter outMessage;
+    //private PrintWriter outMessage;
+    private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
     private String serverHost;
     private int serverPort;
@@ -54,18 +57,23 @@ public class RegNumMaintenanceController implements Initializable {
     private final ObservableList<String> optionsList = FXCollections.observableArrayList("Свободна", "Занята", "На ТО");
 
     public void addVehicle() throws IOException, ClassNotFoundException {
-        sendMsg("#ADDVEHICLE");
-        sendMsg(regNumTextField.getText());
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = "#ADDVEHICLE";
+        serviceMsg.parameters.put("gos_num", regNumTextField.getText());
         String state = stateBox.getValue();
+
         switch (state) {
             case "Свободна":
-                sendMsg("1");
+                serviceMsg.parameters.put("state", "1");
+                sendMsg(serviceMsg);
                 break;
             case "Занята":
-                sendMsg("0");
+                serviceMsg.parameters.put("state", "0");
+                sendMsg(serviceMsg);
                 break;
             case "На ТО":
-                sendMsg("2");
+                serviceMsg.parameters.put("state", "2");
+                sendMsg(serviceMsg);
                 break;
         }
         //sendMsg(state);
@@ -95,17 +103,34 @@ public class RegNumMaintenanceController implements Initializable {
                             int cellIndex = t.getTableRow().getIndex();
                             regNumCellData = regNum.getCellData(cellIndex);
                             vehicleStateCellData = vehicleState.getCellData(cellIndex);
-                            sendMsg("#VEHICLESTATECHANGED");
-                            sendMsg(regNumCellData);
+                            //sendMsg("#VEHICLESTATECHANGED");
+                            ServiceMsg serviceMsg = new ServiceMsg();
+                            serviceMsg.command = "#VEHICLESTATECHANGED";
+                            serviceMsg.parameters.put("gos_num", regNumCellData);
                             switch (vehicleStateCellData) {
                                 case "Свободна":
-                                    sendMsg("1");
+                                    serviceMsg.parameters.put("state", "1");
+                                    try {
+                                        sendMsg(serviceMsg);
+                                    } catch (IOException ioException) {
+                                        ioException.printStackTrace();
+                                    }
                                     break;
                                 case "Занята":
-                                    sendMsg("0");
+                                    serviceMsg.parameters.put("state", "0");
+                                    try {
+                                        sendMsg(serviceMsg);
+                                    } catch (IOException ioException) {
+                                        ioException.printStackTrace();
+                                    }
                                     break;
                                 case "На ТО":
-                                    sendMsg("2");
+                                    serviceMsg.parameters.put("state", "2");
+                                    try {
+                                        sendMsg(serviceMsg);
+                                    } catch (IOException ioException) {
+                                        ioException.printStackTrace();
+                                    }
                                     break;
                             }
                             try {
@@ -119,9 +144,11 @@ public class RegNumMaintenanceController implements Initializable {
                         btn.setOnAction(e -> {
                             int cellIndex = t.getTableRow().getIndex();
                             regNumCellData = regNum.getCellData(cellIndex);
-                            sendMsg("#DELETEVEHICLE");
-                            sendMsg(regNumCellData);
+                            ServiceMsg serviceMsg = new ServiceMsg();
+                            serviceMsg.command = "#DELETEVEHICLE";
+                            serviceMsg.parameters.put("gos_num", regNumCellData);
                             try {
+                                sendMsg(serviceMsg);
                                 updateTableData();
                             } catch (IOException | ClassNotFoundException ioException) {
                                 ioException.printStackTrace();
@@ -165,9 +192,16 @@ public class RegNumMaintenanceController implements Initializable {
         vehicleTable.setItems(FXCollections.observableArrayList(arrayList));
     }
 
-    public void sendMsg(String msg) {
-        outMessage.println(msg);
-        outMessage.flush();
+    public void sendMsg(ServiceMsg serviceMsg) throws IOException {
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
+    }
+
+    public void sendMsg(String command) throws IOException {
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = command;
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
     }
 
     public void setSettings() throws IOException {
@@ -179,21 +213,20 @@ public class RegNumMaintenanceController implements Initializable {
 
     public void initClient() throws IOException {
         clientSocket = new Socket(serverHost, serverPort);
-        outMessage = new PrintWriter(clientSocket.getOutputStream());
+        objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
         try {
-            outMessage.println("#REGNUMMAINTENANCECLOSE");
-            outMessage.println("##session##end##");
-            outMessage.flush();
-            outMessage.close();
+            sendMsg("#REGNUMMAINTENANCECLOSE");
+            sendMsg("##session##end##");
+            objectOutputStream.close();
             objectInputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {
-            System.out.println("Null pointer exception in shutdown(it's fine)");
+            ex.printStackTrace();
         }
     }
 

@@ -12,7 +12,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Locale;
+
 import java.util.Scanner;
 
 public class PDOClientHandler implements Runnable {

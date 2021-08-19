@@ -33,7 +33,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/MainWindow.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/MainWindow.fxml"));
         Parent root = loader.load();
         stage.setTitle("Администратор");
         stage.setScene(new Scene(root, 1158, 700));
@@ -41,7 +41,7 @@ public class Main extends Application {
 
 
         controller.settingsBtn.setOnAction((ActionEvent) -> {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("resources/SettingsWindow.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/SettingsWindow.fxml"));
             Parent root1 = null;
             try {
                 root1 = fxmlLoader.load();
@@ -72,8 +72,20 @@ public class Main extends Application {
         });
 
         controller.updateBtn.setOnAction(ActionEvent->controller.updateTableData());
-        controller.resetDatabaseBtn.setOnAction(ActionEvent -> controller.truncateDatabase());
-        controller.resetVehicleStateBtn.setOnAction(ActionEvent -> controller.resetVehicleState());
+        controller.resetDatabaseBtn.setOnAction(ActionEvent -> {
+            try {
+                controller.truncateDatabase();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        controller.resetVehicleStateBtn.setOnAction(ActionEvent -> {
+            try {
+                controller.resetVehicleState();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
         controller.reconnectBtn.setOnAction(ActionEvent -> {
             try {
                 controller.reconnect();

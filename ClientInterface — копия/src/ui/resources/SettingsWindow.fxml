@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="245.0" prefWidth="335.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.SettingsController">
+    <children>
+        <TextField fx:id="ipTextField" layoutX="139.0" layoutY="22.0" promptText="127.0.0.1" />
+        <TextField fx:id="portTextField" layoutX="139.0" layoutY="55.0" promptText="5555" />
+        <Label layoutX="37.0" layoutY="59.0" text="port" />
+        <Label layoutX="37.0" layoutY="26.0" text="ip-address/host" />
+        <Button fx:id="saveSettings" layoutX="42.0" layoutY="168.0" mnemonicParsing="false" text="Сохранить" />
+      <PasswordField fx:id="passwordField" layoutX="139.0" layoutY="123.0" promptText="1234" />
+      <TextField fx:id="loginField" layoutX="139.0" layoutY="90.0" promptText="login" />
+      <Label layoutX="37.0" layoutY="94.0" text="Логин" />
+      <Label layoutX="37.0" layoutY="127.0" text="Пароль" />
+    </children>
+</AnchorPane>

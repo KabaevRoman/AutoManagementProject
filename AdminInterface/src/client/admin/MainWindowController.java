@@ -4,6 +4,8 @@ import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.media.AudioClip;
+import msg.AdminMsg;
+import msg.ServiceMsg;
 import table.SummaryTable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -70,13 +72,13 @@ public class MainWindowController implements Initializable {
     private String serverHost;
     private int serverPort;
     private Socket clientSocket;
-    private PrintWriter outMessage;
+    //private PrintWriter outMessage;
     private ObjectInputStream objectInputStream;
+    private ObjectOutputStream objectOutputStream;
     private String departureTimeCellData;
     private String gosNumCellData;
     private String PDOCellData;
     private String idSumCellData;
-    private Boolean connected;
     private final ObservableList<String> optionsList = FXCollections.observableArrayList("Одобрено", "Отказ", "На согласовании");
 
     public void initClient() throws IOException, InterruptedException {
@@ -85,12 +87,10 @@ public class MainWindowController implements Initializable {
         gosNumCellData = "";
         try {
             clientSocket = new Socket(serverHost, serverPort);
-            outMessage = new PrintWriter(clientSocket.getOutputStream());
             objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+            objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
             sqlQueryEmpty = true;
-            connected = true;
         } catch (IOException e) {
-            connected = false;
             ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
                     "Ошибка во время подключения к серверу, проверьте настройки подключения или обратитесь к " +
                             "администратору чтобы узнать статус сервера ");
@@ -100,11 +100,12 @@ public class MainWindowController implements Initializable {
             try {
                 while (running) {
                     try {
-                        if (objectInputStream.readBoolean()) {
+                        AdminMsg adminMsg = (AdminMsg) objectInputStream.readObject();
+                        if (adminMsg.notify) {
                             new AudioClip(Objects.requireNonNull(MainWindowController.class.getResource("/notification.wav")).toString()).play();
                         }
-                        carList = (ArrayList<String>) objectInputStream.readObject();
-                        pendingApprovalList = (ArrayList<SummaryTable>) objectInputStream.readObject();
+                        carList = adminMsg.carList;
+                        pendingApprovalList = adminMsg.arrayList;
                     } catch (SocketException | EOFException ex) {
                         Platform.runLater(() -> ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
                                 "Вы были отключены от сервера"));
@@ -122,12 +123,19 @@ public class MainWindowController implements Initializable {
         }).start();
     }
 
-    public void sendMsg(String msg) {
-        outMessage.println(msg);
-        outMessage.flush();
+    public void sendMsg(ServiceMsg serviceMsg) throws IOException {
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
     }
 
-    public void truncateDatabase() {
+    public void sendMsg(String command) throws IOException {
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = command;
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
+    }
+
+    public void truncateDatabase() throws IOException {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Очистить базу данных");
         alert.setHeaderText("Все данные из таблицы с запросами будут ПОЛНОСТЬЮ УДАЛЕНЫ");
@@ -137,7 +145,7 @@ public class MainWindowController implements Initializable {
         }
     }
 
-    public void resetVehicleState() {
+    public void resetVehicleState() throws IOException {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Освободить статусы авто");
         alert.setHeaderText("Статус всех машин будет установлен на свободный");
@@ -200,11 +208,17 @@ public class MainWindowController implements Initializable {
                             gosNumCellData = gosNum.getCellData(cellIndex);
                             departureTimeCellData = departureTime.getCellData(cellIndex);
                             PDOCellData = PDO.getCellData(cellIndex);
-                            sendMsg("#UPDATE");
-                            sendMsg(idSumCellData);
-                            sendMsg(gosNumCellData);
-                            sendMsg(departureTimeCellData);
-                            sendMsg(PDOCellData);
+                            ServiceMsg serviceMsg = new ServiceMsg();
+                            serviceMsg.command = "#UPDATE";
+                            serviceMsg.parameters.put("id", idSumCellData);
+                            serviceMsg.parameters.put("gos_num", gosNumCellData);
+                            serviceMsg.parameters.put("departure_time", departureTimeCellData);
+                            serviceMsg.parameters.put("pdo", PDOCellData);
+                            try {
+                                sendMsg(serviceMsg);
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
                             sqlQueryEmpty = true;
                             updateTableData();
                         });
@@ -219,16 +233,16 @@ public class MainWindowController implements Initializable {
         Platform.runLater(() -> pendingApprovalTable.getItems().clear());
         Platform.runLater(() ->
                 pendingApprovalTable.setItems(FXCollections.observableArrayList(pendingApprovalList)));
-        Platform.runLater(() -> gosNum.setCellFactory(ComboBoxTableCell.forTableColumn(FXCollections.observableList(carList))));
+        Platform.runLater(() ->
+                gosNum.setCellFactory(ComboBoxTableCell.forTableColumn(FXCollections.observableList(carList))));
     }
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
         running = false;
         try {
-            outMessage.println("##session##end##");
-            outMessage.flush();
-            outMessage.close();
+            sendMsg("##session##end##");
+            objectOutputStream.close();
             objectInputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {
@@ -248,9 +262,8 @@ public class MainWindowController implements Initializable {
         Thread.sleep(100);
         running = false;
         try {
-            outMessage.println("##session##end##");
-            outMessage.flush();
-            outMessage.close();
+            sendMsg("##session##end##");
+            objectOutputStream.close();
             objectInputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {

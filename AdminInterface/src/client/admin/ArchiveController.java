@@ -6,10 +6,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import msg.ServiceMsg;
 import table.ArchiveTable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
@@ -37,7 +39,8 @@ public class ArchiveController implements Initializable {
     public TableColumn<ArchiveTable, String> arriveTime;
 
     private Socket clientSocket;
-    private PrintWriter outMessage;
+    //private PrintWriter outMessage;
+    private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
     private String serverHost;
     private int serverPort;
@@ -56,10 +59,13 @@ public class ArchiveController implements Initializable {
     }
 
 
-    public void sendMsg(String msg) {
-        outMessage.println(msg);
-        outMessage.flush();
+    public void sendMsg(String command) throws IOException {
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = command;
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
     }
+
 
     public void setSettings() throws IOException {
         Settings settings = new Settings();
@@ -71,15 +77,14 @@ public class ArchiveController implements Initializable {
     public void initClient() throws IOException {
         setSettings();
         clientSocket = new Socket(serverHost, serverPort);
-        outMessage = new PrintWriter(clientSocket.getOutputStream());
+        objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
-        outMessage.println("##session##end##");
-        outMessage.flush();
-        outMessage.close();
+        sendMsg("##session##end##");
+        objectOutputStream.close();
         objectInputStream.close();
         clientSocket.close();
     }

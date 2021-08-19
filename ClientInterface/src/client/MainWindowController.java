@@ -4,7 +4,8 @@ import custom.Error.ErrorHandler;
 import javafx.fxml.FXML;
 import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
-import table.InterfaceData;
+import msg.UserMsg;
+import msg.ServiceMsg;
 import table.SummaryTable;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -14,11 +15,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.util.converter.DateTimeStringConverter;
+import msg.UserInfo;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -72,17 +71,23 @@ public class MainWindowController implements Initializable {
     private String serverHost;
     private int serverPort;
     private Socket clientSocket;
-    private PrintWriter outMessage;
+    //private PrintWriter outMessage;
     private ObjectInputStream objectInputStream;
+    private ObjectOutputStream objectOutputStream;
     private int lock = 0;//1-accepted,2-refused
     private boolean busy;
     private String gos_num;
+    private String username;
+    private String password;
 
     public void initClient() {
         arrayList = new ArrayList<>();
         try {
             clientSocket = new Socket(serverHost, serverPort);
-            outMessage = new PrintWriter(clientSocket.getOutputStream());
+            objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+            UserInfo userInfo = new UserInfo(username, password);
+            objectOutputStream.writeObject(userInfo);
+            objectOutputStream.flush();
             objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
         } catch (IOException ex) {
             ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
@@ -93,13 +98,11 @@ public class MainWindowController implements Initializable {
         Thread thread = new Thread(() -> {
             while (running) {
                 try {
-                    //lock = objectInputStream.readInt();
-                    //System.out.println(lock);
-                    //numOfCars = objectInputStream.readInt();
-                    InterfaceData interfaceData = (InterfaceData) objectInputStream.readObject();
-                    lock = interfaceData.getLock();
-                    numOfCars = interfaceData.getNumOfCars();
-                    gos_num = interfaceData.getRegNum();
+                    UserMsg userMsg = (UserMsg) objectInputStream.readObject();
+                    System.out.println(userMsg);
+                    lock = userMsg.getLock();
+                    numOfCars = userMsg.getNumOfCars();
+                    gos_num = userMsg.getRegNum();
                     arrayList = (ArrayList<SummaryTable>) objectInputStream.readObject();
                     System.out.println(arrayList);
                     updateTableData();
@@ -115,9 +118,9 @@ public class MainWindowController implements Initializable {
         thread.start();
     }
 
-    public void sendMsg(String msg) {
-        outMessage.println(msg);
-        outMessage.flush();
+    public void sendMsg(ServiceMsg serviceMsg) throws IOException {
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
     }
 
     public void formTable() {
@@ -136,28 +139,44 @@ public class MainWindowController implements Initializable {
         Platform.runLater(() -> summaryTable.setItems(FXCollections.observableArrayList(arrayList)));
         switch (lock) {
             case 1:
-                Platform.runLater(() -> onStartAlert(1, "Заявка одобрена!",
-                        "Как только вы вернетесь на рабочее место," +
-                                " нажмите клавишу ок, это зафиксирует время прибытия\nНомер вашей машины: "));
+                Platform.runLater(() -> {
+                    try {
+                        onStartAlert(1, "Заявка одобрена!",
+                                "Как только вы вернетесь на рабочее место," +
+                                        " нажмите клавишу ок, это зафиксирует время прибытия\nНомер вашей машины: ");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
                 break;
             case 2:
-                Platform.runLater(() -> onStartAlert(2, "Заявка не одобрена!",
-                        "Нажмите OK чтобы закрыть программу"));
+                Platform.runLater(() -> {
+                    try {
+                        onStartAlert(2, "Заявка не одобрена!",
+                                "Нажмите OK чтобы закрыть программу");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
         }
         lock = 0;
     }
 
     public void shutdown(boolean force) throws IOException, InterruptedException {
         Thread.sleep(100);
+        running = false;
         try {
             if (force) {
-                outMessage.println("#FORCEQUIT");
+                ServiceMsg serviceMsg = new ServiceMsg();
+                serviceMsg.command = "#FORCEQUIT";
+                sendMsg(serviceMsg);
+//                outMessage.println("#FORCEQUIT");
             }
-            outMessage.println("##session##end##");
-            outMessage.flush();
-            running = false;
+            ServiceMsg serviceMsg = new ServiceMsg();
+            serviceMsg.command = "##session##end##";
+            sendMsg(serviceMsg);
             objectInputStream.close();
-            outMessage.close();
+            objectOutputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {
             ex.printStackTrace();
@@ -169,9 +188,11 @@ public class MainWindowController implements Initializable {
         Thread.sleep(100);
         running = false;
         try {
-            outMessage.println("##session##end##");
-            outMessage.flush();
-            outMessage.close();
+            ServiceMsg serviceMsg = new ServiceMsg();
+            serviceMsg.command = "##session##end##";
+//            outMessage.println("##session##end##");
+//            outMessage.flush();
+            objectOutputStream.close();
             objectInputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {
@@ -187,7 +208,9 @@ public class MainWindowController implements Initializable {
         try {
             getSettings();
             initClient();
-            sendMsg("#INITTABLE");
+            ServiceMsg serviceMsg = new ServiceMsg();
+            serviceMsg.command = "#AUTH";
+            sendMsg(serviceMsg);
         } catch (IOException | NullPointerException ex) {
             ex.printStackTrace();
         }
@@ -205,10 +228,16 @@ public class MainWindowController implements Initializable {
                     ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка ввода", "Вы не ввели имя либо время отправления");
                     busy = false;
                 } else {
-                    sendMsg("#INSERT");
-                    sendMsg(name);
-                    sendMsg(note);
-                    sendMsg(timeStr);
+                    ServiceMsg serviceMsg = new ServiceMsg();
+                    serviceMsg.command = "#INSERT";
+                    serviceMsg.parameters.put("name", name);
+                    serviceMsg.parameters.put("note", note);
+                    serviceMsg.parameters.put("departureTime", timeStr);
+                    try {
+                        sendMsg(serviceMsg);
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
                     busy = true;
                 }
             } else {
@@ -218,7 +247,7 @@ public class MainWindowController implements Initializable {
         });
     }
 
-    public void onStartAlert(int code, String title, String contentText) {
+    public void onStartAlert(int code, String title, String contentText) throws IOException {
         new AudioClip(Objects.requireNonNull(MainWindowController.class.getResource("/notification.wav")).toString()).play();
         if (code == 1) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -231,8 +260,10 @@ public class MainWindowController implements Initializable {
             alert.showAndWait();
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
             LocalDateTime now = LocalDateTime.now();
-            sendMsg("#FREEAUTO");
-            sendMsg(dtf.format(now));
+            ServiceMsg serviceMsg = new ServiceMsg();
+            serviceMsg.command = "#FREEAUTO";
+            serviceMsg.parameters.put("returnTime", dtf.format(now));
+            sendMsg(serviceMsg);
             System.out.println(dtf.format(now));
             try {
                 shutdown(false);
@@ -248,7 +279,9 @@ public class MainWindowController implements Initializable {
             Stage stage = (Stage) summaryTable.getScene().getWindow();
             stage.hide();
             alert.showAndWait();
-            sendMsg("#ARCHIVE");
+            ServiceMsg serviceMsg = new ServiceMsg();
+            serviceMsg.command = "#ARCHIVE";
+            sendMsg(serviceMsg);
             try {
                 shutdown(false);
             } catch (IOException | InterruptedException ex) {
@@ -268,6 +301,10 @@ public class MainWindowController implements Initializable {
         }
         if (sc.hasNext()) {
             serverPort = Integer.parseInt(sc.nextLine());
+        }
+        if (sc.hasNext()) {
+            username = sc.nextLine();
+            password = sc.nextLine();
         }
         sc.close();
     }

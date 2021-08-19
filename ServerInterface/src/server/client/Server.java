@@ -12,13 +12,14 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Server extends Thread {
-    private Map<Integer, ClientHandler> clients;
+    private Map<String, ClientHandler> clients;
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private boolean running;
     private Integer key;
     private PrintWriter outMessage;
     private Scanner inMessage;
+    private Scanner userReader;
 
     private ServerSocket ss;
     private Socket pdoServerInfoSocket;
@@ -88,13 +89,18 @@ public class Server extends Thread {
     @Override
     public void run() {
         while (running) {
+            String username = null;
             try {
                 clientSocket = serverSocket.accept();
+                userReader = new Scanner(clientSocket.getInputStream());
+                username = userReader.nextLine();
+                System.out.println(username);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            ClientHandler client = new ClientHandler(clientSocket, this, key, dbConnect, saveToggled);
-            clients.put(key, client);
+            ClientHandler client = new ClientHandler(clientSocket, this, dbConnect, saveToggled);
+            clients.put(username, client);
+            System.out.println(username);
             key++;
             new Thread(client).start();
         }
@@ -125,12 +131,12 @@ public class Server extends Thread {
     }
 
     public void sendTableToAllClients() throws IOException {
-        for (Map.Entry<Integer, ClientHandler> client : clients.entrySet()) {
+        for (Map.Entry<String, ClientHandler> client : clients.entrySet()) {
             client.getValue().sendTable(0);
         }
     }
 
-    public void removeClient(Integer key) {
+    public void removeClient(String key) {
         System.out.println(clients);
         clients.remove(key);
         System.out.println(clients);
