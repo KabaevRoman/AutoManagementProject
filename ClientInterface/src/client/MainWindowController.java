@@ -85,7 +85,7 @@ public class MainWindowController implements Initializable {
         try {
             clientSocket = new Socket(serverHost, serverPort);
             objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-            UserInfo userInfo = new UserInfo(username, password);
+            UserInfo userInfo = new UserInfo(username, password, false);
             objectOutputStream.writeObject(userInfo);
             objectOutputStream.flush();
             objectInputStream = new ObjectInputStream(clientSocket.getInputStream());

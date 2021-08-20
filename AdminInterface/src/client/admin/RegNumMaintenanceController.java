@@ -10,6 +10,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 import msg.AdminMsg;
 import msg.ServiceMsg;
+import msg.UserInfo;
 import table.VehicleTable;
 
 import java.io.*;
@@ -55,6 +56,8 @@ public class RegNumMaintenanceController implements Initializable {
     private int serverPort;
     private ArrayList<VehicleTable> arrayList;
     private final ObservableList<String> optionsList = FXCollections.observableArrayList("Свободна", "Занята", "На ТО");
+    private String username;
+    private String password;
 
     public void addVehicle() throws IOException, ClassNotFoundException {
         ServiceMsg serviceMsg = new ServiceMsg();
@@ -175,12 +178,10 @@ public class RegNumMaintenanceController implements Initializable {
         vehicleTable.setEditable(true);
     }
 
-    public void
-    updateTableData() throws IOException, ClassNotFoundException {
+    public void updateTableData() throws IOException, ClassNotFoundException {
         vehicleTable.getItems().clear();
         sendMsg("#REGNUMMAINTENANCE");
         arrayList = (ArrayList<VehicleTable>) objectInputStream.readObject();
-
         System.out.println(arrayList);
         vehicleTable.setItems(FXCollections.observableArrayList(arrayList));
     }
@@ -209,11 +210,16 @@ public class RegNumMaintenanceController implements Initializable {
         settings.getSettings();
         serverPort = settings.getServerPort();
         serverHost = settings.getServerHost();
+        username = settings.getUsername();
+        password = settings.getPassword();
     }
 
     public void initClient() throws IOException {
         clientSocket = new Socket(serverHost, serverPort);
         objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+        UserInfo userInfo = new UserInfo(username, password, true);
+        objectOutputStream.writeObject(userInfo);
+        objectOutputStream.flush();
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
 

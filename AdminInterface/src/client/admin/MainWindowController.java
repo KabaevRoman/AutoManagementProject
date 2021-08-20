@@ -1,12 +1,6 @@
 package client.admin;
 
 import javafx.application.Platform;
-import javafx.scene.control.Button;
-import javafx.scene.control.MenuItem;
-import javafx.scene.media.AudioClip;
-import msg.AdminMsg;
-import msg.ServiceMsg;
-import table.SummaryTable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -16,13 +10,24 @@ import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.AudioClip;
 import javafx.util.Callback;
+import msg.AdminMsg;
+import msg.ServiceMsg;
+import msg.UserInfo;
+import table.SummaryTable;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 import static java.lang.System.exit;
 
@@ -72,13 +77,14 @@ public class MainWindowController implements Initializable {
     private String serverHost;
     private int serverPort;
     private Socket clientSocket;
-    //private PrintWriter outMessage;
     private ObjectInputStream objectInputStream;
     private ObjectOutputStream objectOutputStream;
     private String departureTimeCellData;
     private String gosNumCellData;
     private String PDOCellData;
     private String idSumCellData;
+    private String username;
+    private String password;
     private final ObservableList<String> optionsList = FXCollections.observableArrayList("Одобрено", "Отказ", "На согласовании");
 
     public void initClient() throws IOException, InterruptedException {
@@ -87,8 +93,10 @@ public class MainWindowController implements Initializable {
         gosNumCellData = "";
         try {
             clientSocket = new Socket(serverHost, serverPort);
-            objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
             objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+            UserInfo userInfo = new UserInfo(username, password, false);
+            objectOutputStream.writeObject(userInfo);
+            objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
             sqlQueryEmpty = true;
         } catch (IOException e) {
             ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
@@ -251,11 +259,13 @@ public class MainWindowController implements Initializable {
         exit(0);
     }
 
-    public void setSettings() throws IOException {
+    public void getSettings() throws IOException {
         Settings settings = new Settings();
         settings.getSettings();
         serverPort = settings.getServerPort();
         serverHost = settings.getServerHost();
+        username = settings.getUsername();
+        password = settings.getPassword();
     }
 
     public void reconnect() throws IOException, InterruptedException {
@@ -277,7 +287,7 @@ public class MainWindowController implements Initializable {
         sqlQueryEmpty = true;
         running = true;
         try {
-            setSettings();
+            getSettings();
             initClient();
             sendMsg("#INITPDOTABLE");
         } catch (IOException | InterruptedException | NullPointerException e) {

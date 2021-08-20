@@ -11,6 +11,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import msg.ServiceMsg;
+import msg.UserInfo;
 import table.SummaryTable;
 
 import java.io.IOException;
@@ -55,6 +56,8 @@ public class EditingController implements Initializable {
     private String serverHost;
     private int serverPort;
     private ArrayList<SummaryTable> arrayList;
+    private String username;
+    private String password;
 
 
     public void updateTable() {
@@ -150,6 +153,8 @@ public class EditingController implements Initializable {
         settings.getSettings();
         serverPort = settings.getServerPort();
         serverHost = settings.getServerHost();
+        username = settings.getUsername();
+        password = settings.getPassword();
     }
 
     public void sendMsg(ServiceMsg serviceMsg) throws IOException {
@@ -168,6 +173,9 @@ public class EditingController implements Initializable {
         getSettings();
         clientSocket = new Socket(serverHost, serverPort);
         objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+        UserInfo userInfo = new UserInfo(username, password, true);
+        objectOutputStream.writeObject(userInfo);
+        objectOutputStream.flush();
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
 

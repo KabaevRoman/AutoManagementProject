@@ -3,6 +3,7 @@ package client.admin;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 import java.io.File;
@@ -20,6 +21,10 @@ public class SettingsController implements Initializable {
     public TextField portTextField;
     @FXML
     public Button saveSettings;
+    @FXML
+    public TextField usernameField;
+    @FXML
+    public PasswordField passwordField;
 
     public void getSettings() throws FileNotFoundException {
         File file = new File("AdminSettings.txt");
@@ -30,17 +35,27 @@ public class SettingsController implements Initializable {
         if (sc.hasNext()) {
             portTextField.setText(sc.nextLine());
         }
+        if (sc.hasNext()) {
+            usernameField.setText(sc.nextLine());
+        }
+        if (sc.hasNext()) {
+            passwordField.setText(sc.nextLine());
+        }
         sc.close();
     }
 
     public void save() {
         String ipAddress = ipTextField.getText();
         String port = portTextField.getText();
+        String username = usernameField.getText();
+        String password = passwordField.getText();
         FileWriter myWriter;
         try {
             myWriter = new FileWriter("AdminSettings.txt");
             myWriter.write(ipAddress + "\n");
-            myWriter.write(port);
+            myWriter.write(port + "\n");
+            myWriter.write(username + "\n");
+            myWriter.write(password);
             myWriter.close();
         } catch (IOException e) {
             e.printStackTrace();

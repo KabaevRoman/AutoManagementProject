@@ -2,15 +2,20 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="245.0" prefWidth="335.0" xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.SettingsController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="245.0" prefWidth="335.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.SettingsController">
     <children>
         <TextField fx:id="ipTextField" layoutX="140.0" layoutY="43.0" promptText="127.0.0.1" />
-        <TextField fx:id="portTextField" layoutX="139.0" layoutY="105.0" promptText="3443" />
-        <Label layoutX="42.0" layoutY="110.0" text="port" />
+        <TextField fx:id="portTextField" layoutX="140.0" layoutY="85.0" promptText="3443" />
+        <Label layoutX="42.0" layoutY="89.0" text="port" />
         <Label layoutX="42.0" layoutY="47.0" text="ip-address/host" />
-        <Button fx:id="saveSettings" layoutX="42.0" layoutY="168.0" mnemonicParsing="false" text="Сохранить" />
+        <Button fx:id="saveSettings" layoutX="42.0" layoutY="200.0" mnemonicParsing="false" text="Сохранить" />
+      <TextField fx:id="usernameField" layoutX="140.0" layoutY="123.0" promptText="username" />
+      <PasswordField fx:id="passwordField" layoutX="140.0" layoutY="162.0" />
+      <Label layoutX="40.0" layoutY="127.0" text="Username" />
+      <Label layoutX="40.0" layoutY="166.0" text="Password" />
     </children>
 </AnchorPane>

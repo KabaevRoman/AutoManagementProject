@@ -7,12 +7,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import msg.ServiceMsg;
+import msg.UserInfo;
 import table.ArchiveTable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,6 +45,8 @@ public class ArchiveController implements Initializable {
     private String serverHost;
     private int serverPort;
     private ArrayList<ArchiveTable> arrayList;
+    private String username;
+    private String password;
 
 
     public void initTable() {
@@ -67,17 +69,22 @@ public class ArchiveController implements Initializable {
     }
 
 
-    public void setSettings() throws IOException {
+    public void getSettings() throws IOException {
         Settings settings = new Settings();
         settings.getSettings();
         serverPort = settings.getServerPort();
         serverHost = settings.getServerHost();
+        username = settings.getUsername();
+        password = settings.getPassword();
     }
 
     public void initClient() throws IOException {
-        setSettings();
+        getSettings();
         clientSocket = new Socket(serverHost, serverPort);
         objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+        UserInfo userInfo = new UserInfo(username, password, true);
+        objectOutputStream.writeObject(userInfo);
+        objectOutputStream.flush();
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
 
