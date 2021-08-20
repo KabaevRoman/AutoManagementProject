@@ -18,6 +18,7 @@ public class Server extends Thread {
     public Map<String, AdminHandler> adminClients;
     public Map<String, UserHandler> userClients;
     public Map<String, AdminHandler> maintenanceClients;
+    public Map<String, Integer> lock;
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private boolean running;
@@ -35,6 +36,7 @@ public class Server extends Thread {
         this.userClients = new HashMap<>();
         this.adminClients = new HashMap<>();
         this.maintenanceClients = new HashMap<>();
+        this.lock = new HashMap<>();
         this.serverSocket = new ServerSocket(port);
         this.dbConnect = dbConnect;
         connection = dbConnect.getConnection();
@@ -62,6 +64,12 @@ public class Server extends Thread {
                         case 0:
                             UserHandler user = new UserHandler(objectOutputStream, objectInputStream, this, dbConnect, saveToggled, controller, userInfo.getUsername());
                             userClients.put(userInfo.getUsername(), user);
+                            if (!lock.containsKey(userInfo.getUsername())) {
+                                lock.put(userInfo.getUsername(), 0);
+                            } else {
+                                int lockState = lock.get(userInfo.getUsername());
+                                user.setLock(lockState);
+                            }
                             new Thread(user).start();
                             System.out.println("Клиенты: " + userClients);
                             break;
@@ -70,13 +78,15 @@ public class Server extends Thread {
                             maintenanceClients.put(userInfo.getUsername(), maintenance);
                             System.out.println("Обслуживание:" + maintenanceClients);
                             new Thread(maintenance).start();
+                            break;
                         case 404:
-                            //TODO отправить что неверный логин/пароль либо юзер не существует
+                            clientSocket.close();
                             break;
                     }
                 } catch (IOException | ClassNotFoundException | SQLException e) {
                     e.printStackTrace();
                 }
+                //TODO проверить как запросы работают после  перезапуска и сделать так чтобы при реконнекте все было ок
                 //TODO мб придется оборачивать в отдельный поток
             } catch (IOException e) {
                 e.printStackTrace();
@@ -84,6 +94,7 @@ public class Server extends Thread {
         }
     }
 
+    //TODO показывать количество пользователей и админов через сервак а не хендлеры
     //TODO можно разнести maintenance и admin;
     public void removeClient(String username) {
         if (userClients.containsKey(username)) {
@@ -116,7 +127,7 @@ public class Server extends Thread {
             client.getValue().sendTable();
         }
         for (Map.Entry<String, AdminHandler> client : adminClients.entrySet()) {
-            client.getValue().sendTable(notifyAdmin);//TODO подумать надо нотифаем
+            client.getValue().sendTable(notifyAdmin);
         }
     }
 

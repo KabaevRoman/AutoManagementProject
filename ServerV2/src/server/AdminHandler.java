@@ -55,19 +55,21 @@ public class AdminHandler implements Runnable {
                             String username = getUsername(serviceMsg.parameters.get("id"));
                             if (serviceMsg.parameters.get("pdo").equals("Одобрено")) {
                                 server.userClients.get(username).setLock(1);
+                                server.lock.put(username, 1);
                             } else if (serviceMsg.parameters.get("pdo").equals("Отказ")) {
                                 server.userClients.get(username).setLock(2);
+                                server.lock.put(username, 2);
                             } else {
                                 server.userClients.get(username).setLock(0);
+                                server.lock.put(username, 0);
                             }
+                            server.userClients.get(username).setId(serviceMsg.parameters.get("id"));
                             server.sendTableToAllClients(false);
-                            //TODO должен приходить ник типа которому делают апдейт
 //                            server.sendMsgToClientServer(pdo);
 //                            server.sendMsgToClientServer(id);
                             break;
                         }
                         case "#INITPDOTABLE":
-                            //TODO переделать пересылку таблицы обжектом
                             sendTable(false);
                             break;
                         case "#TRUNCATE": {

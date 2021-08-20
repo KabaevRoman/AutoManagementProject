@@ -101,7 +101,7 @@ public class MainWindowController implements Initializable {
         } catch (IOException e) {
             ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
                     "Ошибка во время подключения к серверу, проверьте настройки подключения или обратитесь к " +
-                            "администратору чтобы узнать статус сервера ");
+                            "администратору чтобы узнать статус сервера");
             return;
         }
         new Thread(() -> {
@@ -116,7 +116,7 @@ public class MainWindowController implements Initializable {
                         pendingApprovalList = adminMsg.arrayList;
                     } catch (SocketException | EOFException ex) {
                         Platform.runLater(() -> ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
-                                "Вы были отключены от сервера"));
+                                "Отключены от сервера"));
                         System.out.println("socket was closed while listening(it's ok)");
                         break;
                     }

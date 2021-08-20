@@ -159,7 +159,6 @@ public class MainWindowController implements Initializable {
                     }
                 });
         }
-        lock = 0;
     }
 
     public void shutdown(boolean force) throws IOException, InterruptedException {
