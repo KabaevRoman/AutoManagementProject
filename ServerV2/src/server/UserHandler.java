@@ -75,8 +75,9 @@ public class UserHandler implements Runnable {
                         case "#FREEAUTO": {
                             changeAutoState();
                             saveReturnTime(serviceMsg.parameters.get("returnTime"));
-                            if (saveToggled)
+                            if (saveToggled) {
                                 saveToArchive();
+                            }
                             server.lock.remove(username);
                             break;
                         }
@@ -134,7 +135,7 @@ public class UserHandler implements Runnable {
     public void saveToArchive() throws SQLException {
         connection.createStatement().executeUpdate(
                 "INSERT INTO archive(old_id,fio,departure_time,car_status,return_time,pdo, note,gos_num)" +
-                        "SELECT id,fio,departure_time,car_status,return_time,pdo, note,gos_num from summary WHERE username=" + username);
+                        "SELECT id,fio,departure_time,car_status,return_time,pdo, note,gos_num from summary WHERE id=" + id);
     }
 
     public void close() throws IOException {

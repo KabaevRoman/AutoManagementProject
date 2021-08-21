@@ -66,6 +66,7 @@ public class Server extends Thread {
                             userClients.put(userInfo.getUsername(), user);
                             if (!lock.containsKey(userInfo.getUsername())) {
                                 lock.put(userInfo.getUsername(), 0);
+                                user.setLock(0);
                             } else {
                                 int lockState = lock.get(userInfo.getUsername());
                                 user.setLock(lockState);

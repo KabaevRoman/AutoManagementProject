@@ -104,6 +104,7 @@ public class MainWindowController implements Initializable {
                             "администратору чтобы узнать статус сервера");
             return;
         }
+        //TODO кнопка переподключения сломалась к хуям
         new Thread(() -> {
             try {
                 while (running) {
