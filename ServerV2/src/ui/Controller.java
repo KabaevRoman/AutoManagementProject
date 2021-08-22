@@ -35,6 +35,8 @@ public class Controller implements Initializable {
     public RadioButton toggleSaveOn;
     @FXML
     public RadioButton toggleSaveOff;
+    @FXML
+    public Label numOfAdminLabel;
 
 
     private String dbAddressString = "";

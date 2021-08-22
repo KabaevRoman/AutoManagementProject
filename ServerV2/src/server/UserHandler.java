@@ -1,15 +1,11 @@
 package server;
 
-import javafx.application.Platform;
 import msg.UserMsg;
 import msg.ServiceMsg;
 import table.SummaryTable;
-import ui.Controller;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,28 +16,22 @@ public class UserHandler implements Runnable {
     private Connection connection;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
-    //private Scanner inMessage;
-    private int clients_count = 0;
     private boolean running = true;
     private boolean saveToggled;
     private String username;
-    public Controller controller;
     private int lock;
     private String id;
 
 
-    public UserHandler(ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream, Server server, DBConnect dbConnect, boolean saveToggled, Controller controller, String username) {
+    public UserHandler(ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream, Server server,
+                       DBConnect dbConnect, boolean saveToggled, String username) {
         try {
             this.username = username;
-            this.controller = controller;
             this.saveToggled = saveToggled;
             this.server = server;
             this.objectOutputStream = objectOutputStream;
             this.objectInputStream = objectInputStream;
-            //this.inMessage = new Scanner(socket.getInputStream());
             this.connection = dbConnect.getConnection();
-            this.clients_count++;
-            Platform.runLater(() -> server.controller.numOfClientsLabel.setText(String.valueOf(clients_count)));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -64,14 +54,18 @@ public class UserHandler implements Runnable {
                     System.out.println(serviceMsg.command);
                     switch (serviceMsg.command) {
                         case "#INSERT": {
-//                            String name =
-//                            String note =
-//                            String time =
-                            insertRecording(serviceMsg.parameters.get("name"), serviceMsg.parameters.get("note"), serviceMsg.parameters.get("departureTime"), username);
+                            insertRecording(
+                                    serviceMsg.parameters.get("name"),
+                                    serviceMsg.parameters.get("note"),
+                                    serviceMsg.parameters.get("departureTime"),
+                                    username
+                            );
                             server.sendTableToAllClients(true);
-                            //System.out.println(userWaitingApproval());
                             break;
                         }
+                        case "#INITUSERTABLE":
+                            sendTable();
+                            break;
                         case "#FREEAUTO": {
                             changeAutoState();
                             saveReturnTime(serviceMsg.parameters.get("returnTime"));
@@ -79,20 +73,17 @@ public class UserHandler implements Runnable {
                                 saveToArchive();
                             }
                             server.lock.remove(username);
+                            server.sendTableToAllClients(false);
                             break;
                         }
-                        case "#AUTH":
-                            sendTable();
-                            break;
                         case "#ARCHIVE":
                             if (saveToggled) {
                                 saveToArchive();
                             }
                             server.lock.remove(username);
+                            server.sendTableToAllClients(false);
                             break;
                         case "#FORCEQUIT":
-                            //removeClientFromDB();
-                            //server.sendTableToAllClients();
                             break;
                         case "##session##end##":
                             this.close();
@@ -102,7 +93,7 @@ public class UserHandler implements Runnable {
                             break;
                     }
                 }
-            } catch (NullPointerException | IOException | SQLException | ClassNotFoundException ex) {
+            } catch (NullPointerException | SQLException | ClassNotFoundException | IOException ex) {
                 ex.printStackTrace();
             }
         }
@@ -110,7 +101,7 @@ public class UserHandler implements Runnable {
 
     //TODO проверить перезапуск сервера вроде с ним что-то не так
     private void saveReturnTime(String date) throws SQLException {
-        System.out.println("UPDATE summary SET return_time =" + date + " WHERE id=" + username);
+        System.out.println("UPDATE summary SET return_time =" + date + " WHERE id=" + id);
         try {
             connection.createStatement().executeUpdate(
                     "UPDATE summary SET return_time =" + "'" + date + "'" + " WHERE id=" + id);
@@ -141,8 +132,6 @@ public class UserHandler implements Runnable {
     public void close() throws IOException {
         running = false;
         server.removeClient(username);
-        clients_count--;
-        Platform.runLater(() -> server.controller.numOfClientsLabel.setText(String.valueOf(clients_count)));
         objectInputStream.close();
         objectOutputStream.close();
     }
@@ -198,6 +187,4 @@ public class UserHandler implements Runnable {
         objectOutputStream.writeObject(arrayList);
         objectOutputStream.flush();
     }
-
-
 }

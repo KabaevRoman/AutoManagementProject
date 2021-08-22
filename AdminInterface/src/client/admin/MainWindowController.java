@@ -85,7 +85,8 @@ public class MainWindowController implements Initializable {
     private String idSumCellData;
     private String username;
     private String password;
-    private final ObservableList<String> optionsList = FXCollections.observableArrayList("Одобрено", "Отказ", "На согласовании");
+    private final ObservableList<String> optionsList = FXCollections.observableArrayList(
+            "Одобрено", "Отказ", "На согласовании");
 
     public void initClient() throws IOException, InterruptedException {
         carList = new ArrayList<>();
@@ -97,7 +98,6 @@ public class MainWindowController implements Initializable {
             UserInfo userInfo = new UserInfo(username, password, false);
             objectOutputStream.writeObject(userInfo);
             objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-            sqlQueryEmpty = true;
         } catch (IOException e) {
             ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
                     "Ошибка во время подключения к серверу, проверьте настройки подключения или обратитесь к " +
@@ -111,14 +111,15 @@ public class MainWindowController implements Initializable {
                     try {
                         AdminMsg adminMsg = (AdminMsg) objectInputStream.readObject();
                         if (adminMsg.notify) {
-                            new AudioClip(Objects.requireNonNull(MainWindowController.class.getResource("/notification.wav")).toString()).play();
+                            new AudioClip(Objects.requireNonNull(MainWindowController.class
+                                    .getResource("/notification.wav")).toString()).play();
                         }
                         carList = adminMsg.carList;
                         pendingApprovalList = adminMsg.arrayList;
                     } catch (SocketException | EOFException ex) {
-                        Platform.runLater(() -> ErrorHandler.errorAlert(Alert.AlertType.ERROR, "Ошибка подключения!",
-                                "Отключены от сервера"));
-                        System.out.println("socket was closed while listening(it's ok)");
+                        Platform.runLater(() -> ErrorHandler.errorAlert(Alert.AlertType.ERROR,
+                                "Ошибка подключения!", "Отключены от сервера"));
+                        ex.printStackTrace();
                         break;
                     }
                     if (sqlQueryEmpty) {
@@ -181,14 +182,17 @@ public class MainWindowController implements Initializable {
             table.setGosNum(event.getNewValue());
             sqlQueryEmpty = false;
         });
-
         departureTime.setOnEditCommit(event -> {
             SummaryTable table = event.getRowValue();
             table.setDepartureTime(event.getNewValue());
             sqlQueryEmpty = false;
         });
-
         PDO.setOnEditCommit(event -> {
+            SummaryTable table = event.getRowValue();
+            table.setPDO(event.getNewValue());
+            sqlQueryEmpty = false;
+        });
+        note.setOnEditCommit(event -> {
             SummaryTable table = event.getRowValue();
             table.setPDO(event.getNewValue());
             sqlQueryEmpty = false;
@@ -223,12 +227,12 @@ public class MainWindowController implements Initializable {
                             serviceMsg.parameters.put("gos_num", gosNumCellData);
                             serviceMsg.parameters.put("departure_time", departureTimeCellData);
                             serviceMsg.parameters.put("pdo", PDOCellData);
+                            sqlQueryEmpty = true;
                             try {
                                 sendMsg(serviceMsg);
                             } catch (IOException ioException) {
                                 ioException.printStackTrace();
                             }
-                            sqlQueryEmpty = true;
                             updateTableData();
                         });
                         return t;
@@ -239,7 +243,8 @@ public class MainWindowController implements Initializable {
     }
 
     public void updateTableData() {
-        Platform.runLater(() -> pendingApprovalTable.getItems().clear());
+        Platform.runLater(() ->
+                pendingApprovalTable.getItems().clear());
         Platform.runLater(() ->
                 pendingApprovalTable.setItems(FXCollections.observableArrayList(pendingApprovalList)));
         Platform.runLater(() ->
@@ -278,9 +283,8 @@ public class MainWindowController implements Initializable {
             objectInputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {
-            System.out.println("null pointer in reconnect");
+            ex.printStackTrace();
         }
-        objectInputStream = null;
         init();
     }
 

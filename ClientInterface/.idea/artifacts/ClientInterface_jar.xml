@@ -12,6 +12,14 @@
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/javafx-base-11.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/javafx-base-11-win.jar" path-in-jar="/" />
       <element id="library" level="module" name="javafx-fxml" module-name="ClientInterface" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/javafx-base-11-win.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/javafx-base-11.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/javafx-controls-11-win.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/javafx-controls-11.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/javafx-fxml-11-win.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/javafx-fxml-11.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/javafx-graphics-11-win.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/lib/javafx-graphics-11.jar" />
     </root>
   </artifact>
 </component>

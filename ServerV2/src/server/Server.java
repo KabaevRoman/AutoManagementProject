@@ -1,5 +1,6 @@
 package server;
 
+import javafx.application.Platform;
 import msg.UserInfo;
 import ui.Controller;
 
@@ -19,7 +20,7 @@ public class Server extends Thread {
     public Map<String, UserHandler> userClients;
     public Map<String, AdminHandler> maintenanceClients;
     public Map<String, Integer> lock;
-    private ServerSocket serverSocket;
+    private final ServerSocket serverSocket;
     private Socket clientSocket;
     private boolean running;
     private ObjectInputStream objectInputStream;
@@ -56,13 +57,17 @@ public class Server extends Thread {
                     System.out.println(userInfo.getUsername() + userInfo.getPassword());
                     switch (userStatus(userInfo)) {
                         case 1:
-                            AdminHandler admin = new AdminHandler(objectOutputStream, objectInputStream, this, dbConnect, userInfo.getUsername());
+                            AdminHandler admin = new AdminHandler(objectOutputStream, objectInputStream,
+                                    this, dbConnect, userInfo.getUsername());
                             adminClients.put(userInfo.getUsername(), admin);
                             new Thread(admin).start();
+                            Platform.runLater(() -> controller.numOfAdminLabel
+                                    .setText(String.valueOf(adminClients.size())));
                             System.out.println("Админы: " + adminClients);
                             break;
                         case 0:
-                            UserHandler user = new UserHandler(objectOutputStream, objectInputStream, this, dbConnect, saveToggled, controller, userInfo.getUsername());
+                            UserHandler user = new UserHandler(objectOutputStream, objectInputStream,
+                                    this, dbConnect, saveToggled, userInfo.getUsername());
                             userClients.put(userInfo.getUsername(), user);
                             if (!lock.containsKey(userInfo.getUsername())) {
                                 lock.put(userInfo.getUsername(), 0);
@@ -72,10 +77,13 @@ public class Server extends Thread {
                                 user.setLock(lockState);
                             }
                             new Thread(user).start();
+                            Platform.runLater(() -> controller.numOfClientsLabel
+                                    .setText(String.valueOf(userClients.size())));
                             System.out.println("Клиенты: " + userClients);
                             break;
                         case 2:
-                            AdminHandler maintenance = new AdminHandler(objectOutputStream, objectInputStream, this, dbConnect, userInfo.getUsername());
+                            AdminHandler maintenance = new AdminHandler(objectOutputStream, objectInputStream,
+                                    this, dbConnect, userInfo.getUsername());
                             maintenanceClients.put(userInfo.getUsername(), maintenance);
                             System.out.println("Обслуживание:" + maintenanceClients);
                             new Thread(maintenance).start();
@@ -87,7 +95,6 @@ public class Server extends Thread {
                 } catch (IOException | ClassNotFoundException | SQLException e) {
                     e.printStackTrace();
                 }
-                //TODO проверить как запросы работают после  перезапуска и сделать так чтобы при реконнекте все было ок
                 //TODO мб придется оборачивать в отдельный поток
             } catch (IOException e) {
                 e.printStackTrace();
@@ -101,12 +108,11 @@ public class Server extends Thread {
         if (userClients.containsKey(username)) {
             userClients.remove(username);
             System.out.println("Клиенты: " + userClients);
+            Platform.runLater(() -> controller.numOfClientsLabel.setText(String.valueOf(userClients.size())));
         } else if (adminClients.containsKey(username)) {
             adminClients.remove(username);
             System.out.println("Администраторы: " + adminClients);
-        } else {
-            maintenanceClients.remove(username);
-            System.out.println("Обслуживание: " + maintenanceClients);
+            Platform.runLater(() -> controller.numOfAdminLabel.setText(String.valueOf(adminClients.size())));
         }
     }
 
@@ -143,7 +149,8 @@ public class Server extends Thread {
                 "users where username='" + userInfo.getUsername() + "'and password='" + userInfo.getPassword() + "')");
         rs.next();
         if (rs.getBoolean("exists")) {
-            rs = connection.createStatement().executeQuery("select admin from users where username ='" + userInfo.getUsername() + "'");
+            rs = connection.createStatement()
+                    .executeQuery("select admin from users where username ='" + userInfo.getUsername() + "'");
             rs.next();
             if (rs.getBoolean("admin")) {
                 if (userInfo.isMaintenance()) {

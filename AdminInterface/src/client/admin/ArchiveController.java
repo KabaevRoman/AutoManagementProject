@@ -90,10 +90,18 @@ public class ArchiveController implements Initializable {
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
-        sendMsg("##session##end##");
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = "##session##end##";
+        serviceMsg.parameters.put("status", "#MAINTENANCE");
+        sendMsg(serviceMsg);
         objectOutputStream.close();
         objectInputStream.close();
         clientSocket.close();
+    }
+
+    public void sendMsg(ServiceMsg serviceMsg) throws IOException {
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
     }
 
     @Override

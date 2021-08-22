@@ -19,13 +19,11 @@ public class AdminHandler implements Runnable {
     private final Connection connection;
     private final ObjectOutputStream objectOutputStream;
     private final ObjectInputStream objectInputStream;
-
-    private static int clients_count = 0;
     private boolean running = true;
-    private String username;
+    private final String username;
 
-    public AdminHandler(ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream, Server server, DBConnect dbConnect, String username) throws IOException, SQLException {
-        clients_count++;
+    public AdminHandler(ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream,
+                        Server server, DBConnect dbConnect, String username) throws IOException, SQLException {
         this.username = username;
         this.server = server;
         this.objectOutputStream = objectOutputStream;
@@ -42,10 +40,6 @@ public class AdminHandler implements Runnable {
                     System.out.println(serviceMsg.command);
                     switch (serviceMsg.command) {
                         case "#UPDATE": {
-//                            String id = inMessage.nextLine();
-//                            String gos_num = inMessage.nextLine();
-//                            String departure_time = inMessage.nextLine();
-//                            String pdo = inMessage.nextLine();
                             updateRecording(
                                     serviceMsg.parameters.get("id"),
                                     serviceMsg.parameters.get("gos_num"),
@@ -65,8 +59,6 @@ public class AdminHandler implements Runnable {
                             }
                             server.userClients.get(username).setId(serviceMsg.parameters.get("id"));
                             server.sendTableToAllClients(false);
-//                            server.sendMsgToClientServer(pdo);
-//                            server.sendMsgToClientServer(id);
                             break;
                         }
                         case "#INITPDOTABLE":
@@ -92,6 +84,10 @@ public class AdminHandler implements Runnable {
                         case "#REGNUMMAINTENANCE":
                             sendRegNumRecords();
                             break;
+                        case "#REGNUMMAINTENANCECLOSE": {
+                            server.sendTableToAllClients(false);
+                            break;
+                        }
                         case "#VEHICLESTATECHANGED": {
                             updateRegNum(serviceMsg.parameters.get("gos_num"),
                                     serviceMsg.parameters.get("state")
@@ -101,7 +97,6 @@ public class AdminHandler implements Runnable {
                         }
                         case "#ADDVEHICLE": {
                             addVehicle(serviceMsg.parameters.get("gos_num"), serviceMsg.parameters.get("state"));
-                            //server.sendTableToAllPDOClients(false); ломает взаимодействие с редактором
                             server.sendTableToAllClients(false);
                             break;
                         }
@@ -110,18 +105,20 @@ public class AdminHandler implements Runnable {
                             server.sendTableToAllClients(false);
                             break;
                         }
-                        case "#REGNUMMAINTENANCECLOSE": {
-                            server.sendTableToAllClients(false);
-                            break;
-                        }
                         case "##session##end##":
-                            this.close();
+                            this.close(!serviceMsg.parameters.isEmpty());
                             break;
                         case "#EDIT":
-                            emergencyUpdate(serviceMsg.parameters.get("id"), serviceMsg.parameters.get("departure_time"),
-                                    serviceMsg.parameters.get("arrive_time"), serviceMsg.parameters.get("pdo"),
-                                    serviceMsg.parameters.get("pdo"), serviceMsg.parameters.get("gos_num"));
+                            emergencyUpdate(
+                                    serviceMsg.parameters.get("id"),
+                                    serviceMsg.parameters.get("departure_time"),
+                                    serviceMsg.parameters.get("arrive_time"),
+                                    serviceMsg.parameters.get("pdo"),
+                                    serviceMsg.parameters.get("pdo"),
+                                    serviceMsg.parameters.get("gos_num")
+                            );
                             server.sendTableToAllClients(false);
+                            break;
                     }
                 }
             } catch (NullPointerException | IOException | SQLException | ClassNotFoundException ex) {
@@ -130,10 +127,11 @@ public class AdminHandler implements Runnable {
         }
     }
 
-    private void emergencyUpdate(String id, String departure_time, String return_time, String pdo, String note, String gos_num) throws SQLException {
+    private void emergencyUpdate(String id, String departure_time, String return_time,
+                                 String pdo, String note, String gos_num) throws SQLException {
         System.out.println(departure_time);
         System.out.println(return_time);
-        if (return_time.equals("null") || return_time.equals("")) {
+        if (return_time == null) {
             connection.createStatement().executeUpdate("UPDATE summary SET departure_time = '" + departure_time +
                     "',gos_num='" + gos_num +
                     "',note='" + note +
@@ -154,7 +152,8 @@ public class AdminHandler implements Runnable {
 
 
     public String getUsername(String id) throws SQLException {
-        ResultSet rs = connection.createStatement().executeQuery("SELECT username from summary where id='" + id + "'");
+        ResultSet rs = connection.createStatement()
+                .executeQuery("SELECT username from summary where id='" + id + "'");
         rs.next();
         return rs.getString("username");
     }
@@ -182,16 +181,20 @@ public class AdminHandler implements Runnable {
     }
 
     private void addVehicle(String reg_num, String state) throws SQLException {
-        connection.createStatement().executeUpdate("INSERT INTO car_list(reg_num,car_state) VALUES('" + reg_num + "'," +
-                "'" + state + "')");
+        connection.createStatement().executeUpdate(
+                "INSERT INTO car_list(reg_num,car_state) VALUES('" + reg_num + "'," + "'" + state + "')");
     }
 
-    public void close() throws IOException {
+    public void close(boolean maintenance) throws IOException {
         running = false;
         objectInputStream.close();
         objectOutputStream.close();
-        server.removeClient(username);
-        clients_count--;
+        if (maintenance) {
+            server.maintenanceClients.remove(username);
+        } else {
+            server.removeClient(username);
+        }
+
     }
 
 
@@ -216,19 +219,23 @@ public class AdminHandler implements Runnable {
         objectOutputStream.flush();
     }
 
+    //TODO сделать так чтобы когда ретюрн нулл в редакторе то он съедал
     public void updateRegNum(String reg_num, String state) throws SQLException {
         System.out.println(reg_num);
         System.out.println(state);
-        connection.createStatement().executeUpdate("UPDATE car_list SET car_state =" + state + " WHERE reg_num='" + reg_num + "'");
+        connection.createStatement()
+                .executeUpdate("UPDATE car_list SET car_state =" + state + " WHERE reg_num='" + reg_num + "'");
     }
 
     public void updateRecording(String id, String reg_num, String departure_time, String pdo) throws SQLException {
         System.out.println(reg_num);
-        connection.createStatement().executeUpdate("UPDATE car_list SET car_state = 0 WHERE reg_num='" + reg_num + "'");
-        connection.createStatement().executeUpdate("UPDATE summary SET departure_time = '" + departure_time +
-                "',gos_num='" + reg_num +
-                "',pdo='" + pdo +
-                "' WHERE id='" + id + "'"
+        connection.createStatement()
+                .executeUpdate("UPDATE car_list SET car_state = 0 WHERE reg_num='" + reg_num + "'");
+        connection.createStatement().executeUpdate(
+                "UPDATE summary SET departure_time = '" + departure_time +
+                        "',gos_num='" + reg_num +
+                        "',pdo='" + pdo +
+                        "' WHERE id='" + id + "'"
         );
     }
 
@@ -253,7 +260,8 @@ public class AdminHandler implements Runnable {
     public void sendTable(boolean notify) throws IOException {
         ArrayList<String> carList = new ArrayList<>();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT reg_num FROM car_list where car_state = 1");
+            ResultSet rs = connection.createStatement()
+                    .executeQuery("SELECT reg_num FROM car_list where car_state = 1");
             while (rs.next()) {
                 carList.add(rs.getString("reg_num"));
             }
@@ -264,7 +272,8 @@ public class AdminHandler implements Runnable {
 
         ArrayList<SummaryTable> arrayList = new ArrayList<>();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT*FROM summary where pdo = 'На согласовании'");
+            ResultSet rs = connection.createStatement()
+                    .executeQuery("SELECT*FROM summary where pdo = 'На согласовании'");
             while (rs.next()) {
                 arrayList.add(new SummaryTable(
                         rs.getString("id"),

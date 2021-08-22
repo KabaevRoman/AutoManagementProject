@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
-public class RegNumMaintenanceController implements Initializable {
+public class    RegNumMaintenanceController implements Initializable {
     enum btnType {
         SUBMIT,
         DELETE
@@ -49,13 +49,13 @@ public class RegNumMaintenanceController implements Initializable {
 
 
     private Socket clientSocket;
-    //private PrintWriter outMessage;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
     private String serverHost;
     private int serverPort;
     private ArrayList<VehicleTable> arrayList;
-    private final ObservableList<String> optionsList = FXCollections.observableArrayList("Свободна", "Занята", "На ТО");
+    private final ObservableList<String> optionsList = FXCollections.observableArrayList(
+            "Свободна", "Занята", "На ТО");
     private String username;
     private String password;
 
@@ -227,7 +227,10 @@ public class RegNumMaintenanceController implements Initializable {
         Thread.sleep(100);
         try {
             sendMsg("#REGNUMMAINTENANCECLOSE");
-            sendMsg("##session##end##");
+            ServiceMsg serviceMsg = new ServiceMsg();
+            serviceMsg.command = "##session##end##";
+            serviceMsg.parameters.put("status", "#MAINTENANCE");
+            sendMsg(serviceMsg);
             objectOutputStream.close();
             objectInputStream.close();
             clientSocket.close();

@@ -19,6 +19,7 @@
     </columnConstraints>
     <rowConstraints>
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -29,60 +30,60 @@
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
     </rowConstraints>
     <children>
-        <TextField fx:id="dbAddress" prefHeight="26.0" prefWidth="175.0" promptText="127.0.0.1" GridPane.columnIndex="1" GridPane.rowIndex="2">
+        <TextField fx:id="dbAddress" prefHeight="26.0" prefWidth="175.0" promptText="127.0.0.1" GridPane.columnIndex="1" GridPane.rowIndex="3">
          <GridPane.margin>
             <Insets right="10.0" />
          </GridPane.margin></TextField>
-        <TextField fx:id="serverPort" promptText="5555" GridPane.columnIndex="1" GridPane.rowIndex="7">
+        <TextField fx:id="serverPort" promptText="5555" GridPane.columnIndex="1" GridPane.rowIndex="8">
          <GridPane.margin>
             <Insets right="10.0" />
          </GridPane.margin></TextField>
-        <TextField fx:id="dbName" promptText="UMTSIK" GridPane.columnIndex="1" GridPane.rowIndex="3">
+        <TextField fx:id="dbName" promptText="UMTSIK" GridPane.columnIndex="1" GridPane.rowIndex="4">
          <GridPane.margin>
             <Insets right="10.0" />
          </GridPane.margin></TextField>
-        <TextField fx:id="dbUser" promptText="postgres" GridPane.columnIndex="1" GridPane.rowIndex="4">
+        <TextField fx:id="dbUser" promptText="postgres" GridPane.columnIndex="1" GridPane.rowIndex="5">
          <GridPane.margin>
             <Insets right="10.0" />
          </GridPane.margin></TextField>
-        <Label prefHeight="20.0" prefWidth="127.0" text="Параметры сервера" GridPane.columnIndex="1" GridPane.rowIndex="6">
+        <Label prefHeight="20.0" prefWidth="127.0" text="Параметры сервера" GridPane.columnIndex="1" GridPane.rowIndex="7">
          <GridPane.margin>
             <Insets right="10.0" />
          </GridPane.margin></Label>
-        <Label text="БД hostname" GridPane.rowIndex="2">
+        <Label text="БД hostname" GridPane.rowIndex="3">
          <GridPane.margin>
             <Insets left="10.0" />
          </GridPane.margin></Label>
-        <Label text="Название БД" GridPane.rowIndex="3">
+        <Label text="Название БД" GridPane.rowIndex="4">
          <GridPane.margin>
             <Insets left="10.0" />
          </GridPane.margin></Label>
-        <Label text="Имя пользователя БД" GridPane.rowIndex="4">
+        <Label text="Имя пользователя БД" GridPane.rowIndex="5">
          <GridPane.margin>
             <Insets left="10.0" />
          </GridPane.margin></Label>
-        <Label GridPane.rowIndex="2" />
-        <Label text="Пароль БД" GridPane.rowIndex="5">
+        <Label GridPane.rowIndex="3" />
+        <Label text="Пароль БД" GridPane.rowIndex="6">
          <GridPane.margin>
             <Insets left="10.0" />
          </GridPane.margin></Label>
-        <PasswordField fx:id="dbPassword" GridPane.columnIndex="1" GridPane.rowIndex="5">
+        <PasswordField fx:id="dbPassword" GridPane.columnIndex="1" GridPane.rowIndex="6">
          <GridPane.margin>
             <Insets right="10.0" />
          </GridPane.margin></PasswordField>
-      <Button fx:id="saveBtn" mnemonicParsing="false" text="Сохранить параметры" GridPane.rowIndex="1">
+      <Button fx:id="saveBtn" mnemonicParsing="false" text="Сохранить параметры" GridPane.rowIndex="2">
          <GridPane.margin>
             <Insets left="10.0" />
          </GridPane.margin></Button>
-      <Label text="Параметры БД" GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <Label text="Параметры БД" GridPane.columnIndex="1" GridPane.rowIndex="2">
          <GridPane.margin>
             <Insets right="10.0" />
          </GridPane.margin></Label>
-      <Label text="Порт сервера для пользователей" GridPane.rowIndex="7">
+      <Label text="Порт сервера для пользователей" GridPane.rowIndex="8">
          <GridPane.margin>
             <Insets left="10.0" />
          </GridPane.margin></Label>
-      <Button fx:id="startServerBtn" mnemonicParsing="false" text="Запустить сервер" GridPane.rowIndex="6">
+      <Button fx:id="startServerBtn" mnemonicParsing="false" text="Запустить сервер" GridPane.rowIndex="7">
          <GridPane.margin>
             <Insets left="10.0" />
          </GridPane.margin></Button>
@@ -94,11 +95,11 @@
          <GridPane.margin>
             <Insets right="10.0" />
          </GridPane.margin></Label>
-      <Label text="Запоминать все запросы в отдельную таблицу" GridPane.rowIndex="8">
+      <Label text="Запоминать все запросы в отдельную таблицу" GridPane.rowIndex="9">
          <GridPane.margin>
             <Insets left="10.0" />
          </GridPane.margin></Label>
-      <Pane GridPane.columnIndex="1" GridPane.rowIndex="8">
+      <Pane GridPane.columnIndex="1" GridPane.rowIndex="9">
          <children>
             <RadioButton fx:id="toggleSaveOn" layoutY="9.0" mnemonicParsing="false" text="Вкл">
                <toggleGroup>
@@ -108,5 +109,11 @@
             <RadioButton fx:id="toggleSaveOff" layoutX="58.0" layoutY="9.0" mnemonicParsing="false" selected="true" text="Выкл" toggleGroup="$saveMode" />
          </children>
       </Pane>
+      <Label text="Количество администраторов онлайн" GridPane.rowIndex="1">
+         <GridPane.margin>
+            <Insets left="10.0" />
+         </GridPane.margin>
+      </Label>
+      <Label fx:id="numOfAdminLabel" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
     </children>
 </GridPane>
