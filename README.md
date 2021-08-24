@@ -1,74 +1,27 @@
-# AutoManagementProject
-This project implements client server application for multiple clients. In program exists 2 kinds of clients usual users and administrators.
-Users arrange borrowing of a corporate vehicle with administrator.
-Every client is connected to the server, clients communicate with server by sending special information strings for example #INSERT. Server forms SQL query
-and sends it to database. As soon as server receives any message to modify database it sends updated DB to all clients. There are several input validations inside interface.
-Also settings are implemented so you can launch server and establish clients connections without accesing source codes.
-Current version is in development so a lot of things left TODO, and a lot of bugs left to catch.
-# Example of a client interface
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.35.14.png)
-Next elements of interface are implemented in program's interface
-* Text field for name input
-* Text field for note input
-* Text field for time input(field is restricted you cannot input invalid time)
-* Send button to send request to server 
-* Label to show number of free vehicles
-When table in database is changed by anything, the table will be updated
-*When response of an admin is received by client, prompt with ok button will appear after returning to working place worker will need to press ok, to finish his trip fix return time, and free vehicle that was assigned to him, after that client application will be closed*
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.35.47.png)
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.37.22.png)
-In file dropdown menu two option
-* reconnect (reconnects user to the server, in case there were problems on server side)
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2022.01.11.png)
-* Settings (setup server options for establishing connection)
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2022.11.08.png)
+# VehicleManagementProject
+Приложение состоит из сервера, и множетсва клиентов. Предусмотрено два типа клиентов обычные пользователи и администраторы, согласующие выдачу транспорта(ПДО).
+Сервер подключается к базе данных, где и хранятся записи о текущих запросах, архив, данные пользователей, данные об автотранспорте.
+### Предпологаемый сценарий использования
+Сначала администратор запускает сервер, для запуска сервера, нужно ввести необходимые данные в поля в интерфейсной версии сервера и нажать сохранить. Для запуска сервера, 
+нужно нажать соотвествующую кнопку. Чтобы у пользователя была возможность подключаться к серверу и делать запросы на выделение автотранспорта. Занос в базу данных должен производиться
+по средством непосредственного подключения к базе данных, в данном конкретном случае pgadmin либо через shell postgres. База данных может быть изменена на желаемую, однако для этого надо будет менять исходный код.
+Как только сервер запущен, а пользователь добавлен в базу данных, он может подключиться, заполнить поля и нажать кнопку отправить чтобы отправить запрос на сервер.
+При отправлении запроса от пользователя, администратору приходит оповещение, он заполняет необходимые поля, и нажимает кнопку отправить. Пользователю приходит звуковое оповещение,
+и окно интерфейса заменяется оповещением. В случае если заявка одобрена в оповещении написан номер выделенного транспортного средства и инструкции к действию. Если пользователь 
+нажимает закончить поездку, его время фиксируется, транспорт в базе данных освобождается. Если выбирает закрыть, то программа закрывается и при следующем запуске, она выдаст ему то же самое оповещение.
 
-# Example of an admin interface
-In administrator table Id and Name cannot be changed
-* Admin is a dropdown menu where you can select descision to approve not approve or leave as it is request that were sent by clients
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.36.12.png)
-* Note can be changed by admin by double clincking it and pressing enter to confirm return time can be edit but it's pointless because it will set automatically as soon as user presses ok when he returns from the trip
-* Registration number is column that contains regestration number of a vehicle, when double clicked it drops down menu showing you all available vehicles' numbers
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.36.25.png)
-* When administrator finished processing your request for vehicle he should press submit to send his decsion and vehicle number in case of approving a vehicle giveaway
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.45.06.png)
-* In file menu there are 3 options Settings to set up server parameters for connection, reconnect button in case you need to reconnect to server, and regestration number edit.
-### Registration number edit window
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.45.30.png)
-### Settings window
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.45.23.png)
-## Emergency settings 
-These settings are needed in case of something bad happened with user input or unexpected server restart
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.45.52.png)
-With one click you can reset all car states to free, but these cars may actually be busy or on maintenance so people should use it with caution
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.46.03.png)
-After restarting the server you should clear database because id of a user is created inside server not automatically assigned in DB.
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2023.12.27.png)
-It can actuall be implemented automatically, and still have this option(not sure)
-In case of mis entered data you can edit database table by pressing edit database data, a window will be open, but you will have to be carefull with your input because there is no restrictions in user input
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.46.25.png)
-
-
-# Example of the server interface
-![alt text](https://github.com/KabaevRoman/VehicleManagementProject/blob/master/Client%20Examples/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202021-08-08%20%D0%B2%2020.22.07.png)
-In server interface window you can setup *parameteres of your network*. If remember all requests in database is set, *every query* sent by user and responded by admin *will be coppied into separate table*, in case you need to keep the records for some kind of reports. Number of clients show how many clients,(not admins) are currently connected to server.
-# Database structure
-### Database:
+# Пример интерфейса сервера
+![image](https://user-images.githubusercontent.com/24436707/130604310-bb100acd-9ef7-474c-a8c1-3d4c3ecfde01.png)
+Как видно на изображении, в интерфейсе отображается количество пользователей и администраторов. После заполенния всех полей нужно нажать клавишу сохранить, дальше нажать запустить сервер.
+В случае переключения запоминать все запросы в отдельную таблицу, все пользовательские запросы после обработки администратором, будут отправляться в архив. Архив нельзя редактировать из пользовательского интерефейса.(интерфейса администратора)
+При корректном завершении работы сервера, таблица summary которая содержит все текущие/обработанные за данную сессию запросы будет опустошена, так что для сохранения всех запросов, нужно переключить кнопку архива в положение вкл.
+В случае краша сервера, данные за текущий день и необработанные запросы будут утеряны.
+# База данных
+* Таблица archive
 ```
-CREATE DATABASE "UMTSIK"
-    WITH 
-    OWNER = postgres
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'C'
-    LC_CTYPE = 'C'
-    TABLESPACE = pg_default
-    CONNECTION LIMIT = -1;
-```
-### Archieve table:
-```
-CREATE TABLE public.archieve
+CREATE TABLE public.archive
 (
-    id integer NOT NULL DEFAULT nextval('archieve_id_seq'::regclass),
+    id serial NOT NULL,
     old_id integer,
     fio text COLLATE pg_catalog."default" NOT NULL,
     departure_time time without time zone NOT NULL,
@@ -82,10 +35,10 @@ CREATE TABLE public.archieve
 
 TABLESPACE pg_default;
 
-ALTER TABLE public.archieve
+ALTER TABLE public.archive
     OWNER to postgres;
 ```
-### Vehicle table:
+* Таблица car_list
 ```
 CREATE TABLE public.car_list
 (
@@ -99,11 +52,11 @@ TABLESPACE pg_default;
 ALTER TABLE public.car_list
     OWNER to postgres;
 ```
-Summary table:
+* Таблица summary
 ```
 CREATE TABLE public.summary
 (
-    id integer NOT NULL DEFAULT nextval('summary_id_seq'::regclass),
+    id serial NOT NULL,
     fio text COLLATE pg_catalog."default" NOT NULL,
     departure_time time without time zone NOT NULL,
     car_status integer,
@@ -111,6 +64,7 @@ CREATE TABLE public.summary
     pdo text COLLATE pg_catalog."default" NOT NULL,
     note text COLLATE pg_catalog."default",
     gos_num text COLLATE pg_catalog."default",
+    username text COLLATE pg_catalog."default",
     CONSTRAINT summary_pkey PRIMARY KEY (id)
 )
 
@@ -119,6 +73,80 @@ TABLESPACE pg_default;
 ALTER TABLE public.summary
     OWNER to postgres;
 ```
-### Builded jar executables in ru-version branch
-Builded for mac os, not yet for windows.
-In order to save settings for work launch jar files with terminal java -jar NeededName.jar
+* Таблица users
+```
+CREATE TABLE public.users
+(
+    username text COLLATE pg_catalog."default" NOT NULL,
+    password text COLLATE pg_catalog."default" NOT NULL,
+    admin boolean,
+    CONSTRAINT users_pkey PRIMARY KEY (username)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.users
+    OWNER to postgres;
+```
+Пример данных пользователя
+![image](https://user-images.githubusercontent.com/24436707/130606118-af0e516e-c92a-4d2f-9027-39da94c94846.png)
+
+# Пример интерфейса пользователя
+![image](https://user-images.githubusercontent.com/24436707/130606292-26e02f44-a528-46a6-91e5-ea69b20440b4.png)
+В интерфейсе есть несколько полей ввода, пользователь должен ввести свое имя(обязательно дляввода), заметку(не обязательна для ввода), и желаемое время отправления(обязательно для ввода). В поле имени можно вводить любые символы, также как и в заметки. Поле времени не позволит ввести время неверного формата пример 11:23. После того как пользователь закончил ввод, он нажимает кнопку отправить. //можно подумать над фиксацией имени пользователя в настройках, чтобы оно заполнялось автоматом//
+![image](https://user-images.githubusercontent.com/24436707/130607037-3e0eb61b-a43f-4fc1-bde2-ba7acd2fffa1.png)
+*В одну сессию пользователь не может отправить больше одного запроса.*
+![image](https://user-images.githubusercontent.com/24436707/130607049-17209ed4-68ba-4c9a-9478-3b9bb4634eed.png)
+*Окончание поездки*
+![image](https://user-images.githubusercontent.com/24436707/130607179-2339ad8a-0e2e-40ac-b326-13ce3d313764.png)
+*Ошибка ввода не заполнено одон из обязательных полей*
+![image](https://user-images.githubusercontent.com/24436707/130607355-c6528f91-6739-4004-af09-d2cd1e5530f6.png)
+*Отказ в согласовании*
+![image](https://user-images.githubusercontent.com/24436707/130607438-4d5b079d-6642-4639-8c4b-4b238c2fd926.png)
+*Окно настроек из меню файл*
+![image](https://user-images.githubusercontent.com/24436707/130607529-acbfe98d-96f3-4d9b-b322-69043929e4ac.png)
+*Кнопка переподключения*
+![image](https://user-images.githubusercontent.com/24436707/130607573-a2a3952a-917b-4af3-bcf1-e2e9ffa14c44.png)
+В случае если пользователь ввел несуществующие логин/пароль, его отключит от сервера с ошибкой(в ошибке будет сказано только что связь с сервером разорвана, не уточняя про логин и пароль)
+# Пример интерфейса администратора
+![image](https://user-images.githubusercontent.com/24436707/130608324-29346ac2-626d-43bc-ab97-f375290ca6c2.png)
+Администратор видит только записи со статусом согласования На согласовании. Администратор может двойным нажатием редактировать поля, все кроме №п/п и ФИО.
+*При двойном клике на ячейку в колонке пдо выпадает меню с тремя вариантами*
+![image](https://user-images.githubusercontent.com/24436707/130608559-f8ed1556-1999-4a42-ba3d-63a1512cd1b2.png)
+*При двойном клике на ячейку в колонке гос.номер выпадает меню со всеми машинами со статусом свободны*
+![image](https://user-images.githubusercontent.com/24436707/130608681-584182c3-c19a-46a3-9ab3-ff8fb587db7e.png)
+Как только все данные заполнены, следует нажать кнопку отправить. Следует нажимать кнопку отправить сразу, как только человек заполнил все данные строки, так как после нажатия данные таблицы обновляются, и ВЕСЬ ПРОГРЕСС ЗАПОЛНЕНИЯ ДРУГИХ СТРОК БУДЕТ ПОТЕРЯН.
+### Меню Файл
+![image](https://user-images.githubusercontent.com/24436707/130608909-e9291282-536d-47ed-9b1c-d3a9dcce1f85.png)
+*окно настроек*
+![image](https://user-images.githubusercontent.com/24436707/130608953-55a14981-9f06-4040-af96-a8b7d24131d3.png)
+*редактор гос.номеров*
+![image](https://user-images.githubusercontent.com/24436707/130609015-b14c9633-591b-4b6c-8326-b2e695518774.png)
+В редакторе можно поменять статус машины, добавить новую, удалить неактуальную. При изменениях следует нажимать кнопку отправить.
+*кнопка архив позволяет просмотреть архив*
+![image](https://user-images.githubusercontent.com/24436707/130609518-a3c7ec15-e065-4d22-935f-3c485df0abac.png)
+Кнопка обновить обновляет содержимое таблицы, в случае если произошло что-то непредусмотренное.
+### Меню экстренные настройки
+Меню экстренные настройки нежелательно к использованию, так как может испортить опыт использования приложения. Также они почти не ограничены от пользовательских ошибок ввода.
+*сброс данных в таблице запросов*
+![image](https://user-images.githubusercontent.com/24436707/130609789-3ab506d5-4db4-4100-86f0-1bffa4ae574b.png)
+*сброс данных о транспортных средствах*
+![image](https://user-images.githubusercontent.com/24436707/130609833-be13fd68-e0d5-40bc-9d00-ccaa0153b3b5.png)
+*редактор БД показывает всё содержимое таблицы текущих запросов и позволяет редактировать каждое поле кроме имени и id
+ограничений в полях нет, при завершении измении данных нужно нажать кнопку отправить*
+![image](https://user-images.githubusercontent.com/24436707/130609856-9993fe04-94ad-474b-9454-132a3a227e0c.png)
+*ошибка подключения к серверу при запуске приложения(идентичная ошибка существует у пользовательского сервера)*
+![image](https://user-images.githubusercontent.com/24436707/130610400-21344377-f82d-46e2-b8a7-e828434fd7ad.png)
+*ошибка в случае подключения с использованием некорректных данных/либо при отключении сервера(идентичная ошибка существует у пользовательского сервера)*
+![image](https://user-images.githubusercontent.com/24436707/130610596-e18b2794-6809-4556-92d7-fe7a14b04dd9.png)
+
+# Пример работы консольного варианта сервера
+![image](https://user-images.githubusercontent.com/24436707/130615219-c94a2a84-839a-4b48-91bc-9ec7c038ecc5.png)
+![image](https://user-images.githubusercontent.com/24436707/130615397-498cfee2-c5ae-45d5-9c4e-675bf528c347.png)
+
+Консольный вариант сервера запускается через терминал следующим образом, вызвать терминал в дериктории .jar файла, ввести java -jar ServerCLI.jar.
+
+
+Все настройки сохраняются в .txt файлы с названиями ServerSettings, ClientSettings, AdminSettings. Файл появляется в директории приложения.
+
+

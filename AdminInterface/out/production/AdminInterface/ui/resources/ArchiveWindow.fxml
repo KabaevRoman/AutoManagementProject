@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+
+<TableView fx:id="archiveTable" prefHeight="701.0" prefWidth="1158.0" xmlns="http://javafx.com/javafx/16"
+           xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.admin.ArchiveController">
+    <columns>
+        <TableColumn fx:id="id" minWidth="6.0" prefWidth="40.0" text="№п/п"/>
+        <TableColumn fx:id="idSum" minWidth="6.0" prefWidth="40.0" text="номер при регистрации"/>
+        <TableColumn fx:id="name" minWidth="6.0" prefWidth="130.5" text="ФИО"/>
+        <TableColumn fx:id="departureTime" prefWidth="203.5" text="Время отправления"/>
+        <TableColumn fx:id="PDO" prefWidth="108.0" text="ПДО"/>
+        <TableColumn fx:id="note" prefWidth="264.0" text="Заметки"/>
+        <TableColumn fx:id="gosNum" prefWidth="151.0" text="Гос. номер"/>
+        <TableColumn fx:id="arriveTime" prefWidth="259.0" text="Время возвращения"/>
+    </columns>
+</TableView>

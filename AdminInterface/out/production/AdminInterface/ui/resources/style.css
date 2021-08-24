@@ -1,0 +1,44 @@
+.titleBar {
+    /*-fx-background-color: black;*/
+}
+
+.minimizeBtn:hover {
+    -fx-background-color: rgba(220, 220, 220, 1);
+}
+
+.minimizeBtn:pressed {
+    -fx-background-color: rgba(150, 150, 150, 1);
+}
+
+.fullscreenBtn:hover {
+    -fx-background-color: rgba(220, 220, 220, 1);
+}
+
+.fullscreenBtn:pressed {
+    -fx-background-color: rgba(150, 150, 150, 1);
+}
+
+.closeBtn:hover {
+    -fx-background-color: #E81123;
+}
+
+.closeBtn:pressed {
+    -fx-background-color: #F1707A;
+}
+
+.menu {
+    -fx-min-height: 31px;
+    -fx-min-width: 46px;
+}
+
+.menu-bar {
+    -fx-selection-bar: rgba(220, 220, 220, 1);
+    -fx-text-background-color: black;
+    -fx-focused-text-base-color: black;
+}
+
+.menu:showing {
+    -fx-selection-bar: rgba(150, 150, 150, 1);
+    -fx-text-background-color: white;
+    -fx-focused-text-base-color: white;
+}

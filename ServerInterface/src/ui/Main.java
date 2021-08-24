@@ -9,7 +9,9 @@ import javafx.scene.control.Label;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
-import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.sql.SQLException;
+
 
 public class Main extends Application {
 
@@ -17,16 +19,21 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
         Parent root = loader.load();
-        primaryStage.setTitle("Server");
+        primaryStage.setTitle("Сервер");
         primaryStage.setScene(new Scene(root, 800, 600));
         Controller controller = loader.getController();
-        primaryStage.setOnCloseRequest((ActionEvent) -> controller.closeProgram());
+        primaryStage.setOnCloseRequest((ActionEvent) -> {
+            try {
+                controller.closeProgram();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
         controller.saveBtn.setOnMouseClicked(mouseEvent -> {
             final Popup popup = new Popup();
-            Label label = new Label("Settings saved");
+            Label label = new Label("Настройки сохранены");
             label.setMinHeight(50);
             label.setMinWidth(15);
-            label.setStyle("-fx-background-color: grey;-fx-background-radius: 5px;-fx-text-fill:white");
             popup.getContent().add(label);
             popup.setX(500);
             popup.setY(385);
@@ -42,14 +49,17 @@ public class Main extends Application {
                     2000
             );
         });
-        controller.toggleSaveOn.setOnAction(ActionEvent -> {
-            controller.serverUser.saveToggledMode(controller.toggleSaveOn.isSelected());
-            System.out.println(controller.toggleSaveOn.isSelected());
+        controller.saveBtn.setOnMouseClicked((ActionEvent) -> controller.setSettings());
+        controller.startServerBtn.setOnAction(ActionEvent-> {
+            try {
+                controller.startServer();
+            } catch (IOException | SQLException e) {
+                e.printStackTrace();
+            }
         });
-        controller.toggleSaveOff.setOnAction(ActionEvent -> {
-            controller.serverUser.saveToggledMode(controller.toggleSaveOn.isSelected());
-            System.out.println(controller.toggleSaveOn.isSelected());
-        });
+        controller.toggleSaveOn.setOnAction(ActionEvent -> controller.server.toggleSaveMode(controller.toggleSaveOn.isSelected()));
+        controller.toggleSaveOff.setOnAction(ActionEvent -> controller.server.toggleSaveMode(controller.toggleSaveOn.isSelected()));
+
         primaryStage.show();
     }
 

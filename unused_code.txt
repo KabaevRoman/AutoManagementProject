@@ -1,0 +1,35 @@
+
+//    public void getBackup() throws SQLException {
+//        ResultSet rs = connection.createStatement().executeQuery("SELECT*FROM user_meta_data");
+//        while (rs.next()) {
+//            String username = rs.getString("username");
+//            String id = rs.getString("id");
+//            ScreenLock screenLock;
+//            String gos_num = rs.getString("gos_num");
+//            switch (rs.getInt("lock")) {
+//                case 1:
+//                    screenLock = ScreenLock.LOCKED_APPROVED;
+//                    break;
+//                case 2:
+//                    screenLock = ScreenLock.LOCKED_DISMISSED;
+//                    break;
+//                default:
+//                    screenLock = ScreenLock.UNLOCKED;
+//                    break;
+//            }
+//            userMetaData.put(username, new UserMetaData(screenLock, id, gos_num));
+//        }
+//    }
+
+//    public boolean backupIsEmpty() throws SQLException {
+//        ResultSet rs = connection.createStatement().executeQuery("select count(*) from car_list where car_state = 1");
+//        rs.next();
+//        return (rs.getInt("count") == 0);
+//    }
+//
+//    public void resetBackup() throws SQLException {
+//        connection.createStatement().executeUpdate("TRUNCATE TABLE user_meta_data");
+//    }
+//    public void removeFromBackup(String id) throws SQLException {
+//        connection.createStatement().executeQuery("delete from user_meta_data where id ='" + id + "'");
+//    }

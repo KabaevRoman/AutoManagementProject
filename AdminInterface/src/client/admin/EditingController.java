@@ -10,10 +10,13 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
+import msg.ServiceMsg;
+import msg.UserInfo;
 import table.SummaryTable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
@@ -44,13 +47,17 @@ public class EditingController implements Initializable {
     private String gosNumCellData;
     private String PDOCellData;
     private String idSumCellData;
+    private String noteCellData;
+    private String arriveTimeCellData;
 
     private Socket clientSocket;
-    private PrintWriter outMessage;
+    private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
     private String serverHost;
     private int serverPort;
     private ArrayList<SummaryTable> arrayList;
+    private String username;
+    private String password;
 
 
     public void updateTable() {
@@ -68,12 +75,35 @@ public class EditingController implements Initializable {
         arriveTime.setCellFactory(TextFieldTableCell.forTableColumn());
         departureTime.setCellFactory(TextFieldTableCell.forTableColumn());
 
+        gosNum.setOnEditCommit(event -> {
+            SummaryTable table = event.getRowValue();
+            table.setGosNum(event.getNewValue());
+        });
+
+        departureTime.setOnEditCommit(event -> {
+            SummaryTable table = event.getRowValue();
+            table.setDepartureTime(event.getNewValue());
+        });
+
+        PDO.setOnEditCommit(event -> {
+            SummaryTable table = event.getRowValue();
+            table.setPDO(event.getNewValue());
+        });
+        arriveTime.setOnEditCommit(event -> {
+            SummaryTable table = event.getRowValue();
+            table.setArriveTime(event.getNewValue());
+        });
+        note.setOnEditCommit(event -> {
+            SummaryTable table = event.getRowValue();
+            table.setNote(event.getNewValue());
+        });
+
 
         Callback<TableColumn<SummaryTable, String>, TableCell<SummaryTable, String>> cellFactoryBtn =
                 new Callback<>() {
                     @Override
                     public TableCell<SummaryTable, String> call(final TableColumn<SummaryTable, String> param) {
-                        final Button btn = new Button("Submit");
+                        final Button btn = new Button("Отправить");
                         TableCell<SummaryTable, String> t = new TableCell<>() {
                             @Override
                             public void updateItem(String item, boolean empty) {
@@ -89,15 +119,25 @@ public class EditingController implements Initializable {
                         btn.setOnAction(e -> {
                             int cellIndex = t.getTableRow().getIndex();
                             idSumCellData = idSum.getCellData(cellIndex);
-                            gosNumCellData = gosNum.getCellData(cellIndex);
                             departureTimeCellData = departureTime.getCellData(cellIndex);
+                            noteCellData = note.getCellData(cellIndex);
+                            gosNumCellData = gosNum.getCellData(cellIndex);
+                            arriveTimeCellData = arriveTime.getCellData(cellIndex);
                             PDOCellData = PDO.getCellData(cellIndex);
-
-                            sendMsg("#UPDATE");
-                            sendMsg(idSumCellData);
-                            sendMsg(gosNumCellData);
-                            sendMsg(departureTimeCellData);
-                            sendMsg(PDOCellData);
+                            System.out.println(departureTimeCellData + gosNumCellData + PDOCellData);
+                            ServiceMsg serviceMsg = new ServiceMsg();
+                            serviceMsg.command = "#EDIT";
+                            serviceMsg.parameters.put("id", idSumCellData);
+                            serviceMsg.parameters.put("departure_time", departureTimeCellData);
+                            serviceMsg.parameters.put("arrive_time", arriveTimeCellData);
+                            serviceMsg.parameters.put("pdo", PDOCellData);
+                            serviceMsg.parameters.put("note", noteCellData);
+                            serviceMsg.parameters.put("gos_num", gosNumCellData);
+                            try {
+                                sendMsg(serviceMsg);
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
                             updateTable();
                         });
                         return t;
@@ -108,25 +148,44 @@ public class EditingController implements Initializable {
         summaryTable.setItems(FXCollections.observableArrayList(arrayList));
     }
 
-    public void sendMsg(String msg) {
-        outMessage.println(msg);
-        outMessage.flush();
+    public void getSettings() throws IOException {
+        Settings settings = new Settings();
+        settings.getSettings();
+        serverPort = settings.getServerPort();
+        serverHost = settings.getServerHost();
+        username = settings.getUsername();
+        password = settings.getPassword();
+    }
+
+    public void sendMsg(ServiceMsg serviceMsg) throws IOException {
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
+    }
+
+    public void sendMsg(String command) throws IOException {
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = command;
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
     }
 
     public void initClient() throws IOException {
-        String[] serverParams = MainWindowController.getSettings();
-        serverHost = serverParams[0];
-        serverPort = Integer.parseInt(serverParams[1]);
+        getSettings();
         clientSocket = new Socket(serverHost, serverPort);
-        outMessage = new PrintWriter(clientSocket.getOutputStream());
+        objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+        UserInfo userInfo = new UserInfo(username, password, true);
+        objectOutputStream.writeObject(userInfo);
+        objectOutputStream.flush();
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
-        outMessage.println("##session##end##");
-        outMessage.flush();
-        outMessage.close();
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = "##session##end##";
+        serviceMsg.parameters.put("status", "#MAINTENANCE");
+        sendMsg(serviceMsg);
+        objectOutputStream.close();
         objectInputStream.close();
         clientSocket.close();
     }
@@ -143,3 +202,30 @@ public class EditingController implements Initializable {
         updateTable();
     }
 }
+
+
+//    public void startTimer() throws ParseException {// прикольный но ненужный кусок кода
+//        System.out.println("TimerStarted");
+//        Timer timer = new Timer();
+//        int latestRequestIndex = pendingApprovalList.size() - 1;
+//        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        Date date = new Date();
+//        String expireTime = pendingApprovalTable.getItems().get(latestRequestIndex).getDepartureTime();
+//        String id = pendingApprovalTable.getItems().get(latestRequestIndex).getIdSum();
+//        String currentDate = formatter.format(date);
+//        Date d = dateFormat.parse(currentDate + " " + expireTime);
+//        System.out.println(d);
+//
+//        // продумать кейсы когда люди выходят досрочно
+//        // подумать если пользователь жмет реконнект считать это форс квитом
+//        // подумать как работать с отказами в плане отменять оповещение
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                System.out.println("run started");
+//                new AudioClip(Objects.requireNonNull(MainWindowController.class.getResource("/notification.wav")).toString()).play();
+//                Platform.runLater(() -> ErrorHandler.errorAlert(Alert.AlertType.INFORMATION, "Оповещение", "Время отправления пользователя с id:" + id));
+//            }
+//        }, d);
+//    }

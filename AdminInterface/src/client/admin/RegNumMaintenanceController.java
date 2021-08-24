@@ -8,17 +8,17 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
+import msg.ServiceMsg;
+import msg.UserInfo;
 import table.VehicleTable;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class RegNumMaintenanceController implements Initializable {
+public class    RegNumMaintenanceController implements Initializable {
     enum btnType {
         SUBMIT,
         DELETE
@@ -33,36 +33,51 @@ public class RegNumMaintenanceController implements Initializable {
     @FXML
     public TableColumn<VehicleTable, String> buttonsCol;
     @FXML
+    public TableColumn<VehicleTable, String> delButtonCol;
+    @FXML
     public TextField regNumTextField;
     @FXML
     public ComboBox<String> stateBox;
     @FXML
     public Button addVehicleBtn;
-    @FXML
-    public TableColumn<VehicleTable, String> delButtonCol;
+
 
     private String regNumCellData;
     private String vehicleStateCellData;
 
 
     private Socket clientSocket;
-    private PrintWriter outMessage;
+    private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
     private String serverHost;
     private int serverPort;
     private ArrayList<VehicleTable> arrayList;
-    private final ObservableList<String> optionsList = FXCollections.observableArrayList("Free", "Busy", "On maintenance");
+    private final ObservableList<String> optionsList = FXCollections.observableArrayList(
+            "Свободна", "Занята", "На ТО");
+    private String username;
+    private String password;
 
-    public void addVehicle() {
-        sendMsg("#ADDVEHICLE");
-        sendMsg(regNumTextField.getText());
+    public void addVehicle() throws IOException, ClassNotFoundException {
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = "#ADDVEHICLE";
+        serviceMsg.parameters.put("gos_num", regNumTextField.getText());
         String state = stateBox.getValue();
+
         switch (state) {
-            case "Free" -> sendMsg("1");
-            case "Busy" -> sendMsg("0");
-            case "On maintenance" -> sendMsg("2");
+            case "Свободна":
+                serviceMsg.parameters.put("state", "1");
+                sendMsg(serviceMsg);
+                break;
+            case "Занята":
+                serviceMsg.parameters.put("state", "0");
+                sendMsg(serviceMsg);
+                break;
+            case "На ТО":
+                serviceMsg.parameters.put("state", "2");
+                sendMsg(serviceMsg);
+                break;
         }
-        sendMsg(state);
+        updateTableData();
     }
 
     public Callback<TableColumn<VehicleTable, String>, TableCell<VehicleTable, String>> formCellFactoryBtn(String btnName, btnType type) {
@@ -83,34 +98,63 @@ public class RegNumMaintenanceController implements Initializable {
                     }
                 };
                 switch (type) {
-                    case SUBMIT -> btn.setOnAction(e -> {
-                        int cellIndex = t.getTableRow().getIndex();
-                        regNumCellData = regNum.getCellData(cellIndex);
-                        vehicleStateCellData = vehicleState.getCellData(cellIndex);
-                        sendMsg("#VEHICLESTATECHANGED");
-                        sendMsg(regNumCellData);
-                        switch (vehicleStateCellData) {
-                            case "Free" -> sendMsg("1");
-                            case "Busy" -> sendMsg("0");
-                            case "On maintenance" -> sendMsg("2");
-                        }
-                        try {
-                            updateTableData();
-                        } catch (IOException | ClassNotFoundException ioException) {
-                            ioException.printStackTrace();
-                        }
-                    });
-                    case DELETE -> btn.setOnAction(e -> {
-                        int cellIndex = t.getTableRow().getIndex();
-                        regNumCellData = regNum.getCellData(cellIndex);
-                        sendMsg("#DELETEVEHICLE");
-                        sendMsg(regNumCellData);
-                        try {
-                            updateTableData();
-                        } catch (IOException | ClassNotFoundException ioException) {
-                            ioException.printStackTrace();
-                        }
-                    });
+                    case SUBMIT:
+                        btn.setOnAction(e -> {
+                            int cellIndex = t.getTableRow().getIndex();
+                            regNumCellData = regNum.getCellData(cellIndex);
+                            vehicleStateCellData = vehicleState.getCellData(cellIndex);
+                            //sendMsg("#VEHICLESTATECHANGED");
+                            ServiceMsg serviceMsg = new ServiceMsg();
+                            serviceMsg.command = "#VEHICLESTATECHANGED";
+                            serviceMsg.parameters.put("gos_num", regNumCellData);
+                            switch (vehicleStateCellData) {
+                                case "Свободна":
+                                    serviceMsg.parameters.put("state", "1");
+                                    try {
+                                        sendMsg(serviceMsg);
+                                    } catch (IOException ioException) {
+                                        ioException.printStackTrace();
+                                    }
+                                    break;
+                                case "Занята":
+                                    serviceMsg.parameters.put("state", "0");
+                                    try {
+                                        sendMsg(serviceMsg);
+                                    } catch (IOException ioException) {
+                                        ioException.printStackTrace();
+                                    }
+                                    break;
+                                case "На ТО":
+                                    serviceMsg.parameters.put("state", "2");
+                                    try {
+                                        sendMsg(serviceMsg);
+                                    } catch (IOException ioException) {
+                                        ioException.printStackTrace();
+                                    }
+                                    break;
+                            }
+                            try {
+                                updateTableData();
+                            } catch (IOException | ClassNotFoundException ioException) {
+                                ioException.printStackTrace();
+                            }
+                        });
+                        break;
+                    case DELETE:
+                        btn.setOnAction(e -> {
+                            int cellIndex = t.getTableRow().getIndex();
+                            regNumCellData = regNum.getCellData(cellIndex);
+                            ServiceMsg serviceMsg = new ServiceMsg();
+                            serviceMsg.command = "#DELETEVEHICLE";
+                            serviceMsg.parameters.put("gos_num", regNumCellData);
+                            try {
+                                sendMsg(serviceMsg);
+                                updateTableData();
+                            } catch (IOException | ClassNotFoundException ioException) {
+                                ioException.printStackTrace();
+                            }
+                        });
+                        break;
                 }
                 return t;
             }
@@ -126,8 +170,8 @@ public class RegNumMaintenanceController implements Initializable {
             table.setVehicleState(event.getNewValue());
         });
         stateBox.getItems().setAll(optionsList);
-        buttonsCol.setCellFactory(formCellFactoryBtn("Submit", btnType.SUBMIT));
-        delButtonCol.setCellFactory(formCellFactoryBtn("Delete", btnType.DELETE));
+        buttonsCol.setCellFactory(formCellFactoryBtn("Отправить", btnType.SUBMIT));
+        delButtonCol.setCellFactory(formCellFactoryBtn("Удалить", btnType.DELETE));
         vehicleTable.setEditable(true);
     }
 
@@ -135,39 +179,67 @@ public class RegNumMaintenanceController implements Initializable {
         vehicleTable.getItems().clear();
         sendMsg("#REGNUMMAINTENANCE");
         arrayList = (ArrayList<VehicleTable>) objectInputStream.readObject();
+        System.out.println(arrayList);
         vehicleTable.setItems(FXCollections.observableArrayList(arrayList));
     }
 
-    public void sendMsg(String msg) {
-        outMessage.println(msg);
-        outMessage.flush();
+    public void updContent() throws IOException, ClassNotFoundException {
+        vehicleTable.getItems().clear();
+        arrayList = (ArrayList<VehicleTable>) objectInputStream.readObject();
+        System.out.println(arrayList);
+        vehicleTable.setItems(FXCollections.observableArrayList(arrayList));
+    }
+
+    public void sendMsg(ServiceMsg serviceMsg) throws IOException {
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
+    }
+
+    public void sendMsg(String command) throws IOException {
+        ServiceMsg serviceMsg = new ServiceMsg();
+        serviceMsg.command = command;
+        objectOutputStream.writeObject(serviceMsg);
+        objectOutputStream.flush();
+    }
+
+    public void getSettings() throws IOException {
+        Settings settings = new Settings();
+        settings.getSettings();
+        serverPort = settings.getServerPort();
+        serverHost = settings.getServerHost();
+        username = settings.getUsername();
+        password = settings.getPassword();
     }
 
     public void initClient() throws IOException {
-        String[] serverParams = MainWindowController.getSettings();
-        serverHost = serverParams[0];
-        serverPort = Integer.parseInt(serverParams[1]);
         clientSocket = new Socket(serverHost, serverPort);
-        outMessage = new PrintWriter(clientSocket.getOutputStream());
+        objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+        UserInfo userInfo = new UserInfo(username, password, true);
+        objectOutputStream.writeObject(userInfo);
+        objectOutputStream.flush();
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
 
     public void shutdown() throws IOException, InterruptedException {
         Thread.sleep(100);
         try {
-            outMessage.println("##session##end##");
-            outMessage.flush();
-            outMessage.close();
+            sendMsg("#REGNUMMAINTENANCECLOSE");
+            ServiceMsg serviceMsg = new ServiceMsg();
+            serviceMsg.command = "##session##end##";
+            serviceMsg.parameters.put("status", "#MAINTENANCE");
+            sendMsg(serviceMsg);
+            objectOutputStream.close();
             objectInputStream.close();
             clientSocket.close();
         } catch (NullPointerException ex) {
-            System.out.println("Null pointer exception in shutdown(it's fine)");
+            ex.printStackTrace();
         }
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
+            getSettings();
             initClient();
             formTable();
             updateTableData();

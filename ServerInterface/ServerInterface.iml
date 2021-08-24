@@ -10,14 +10,14 @@
     <orderEntry type="module-library">
       <library name="javafx-fxml">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/javafx-fxml-16.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/javafx-fxml-16-mac.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/javafx-controls-16.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/javafx-controls-16-mac.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/javafx-graphics-16.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/javafx-graphics-16-mac.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/javafx-base-16.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/javafx-base-16-mac.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-fxml-11.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-fxml-11-win.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-controls-11.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-controls-11-win.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-graphics-11.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-graphics-11-win.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-base-11.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-base-11-win.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
