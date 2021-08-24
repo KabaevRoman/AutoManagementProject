@@ -142,6 +142,8 @@ ALTER TABLE public.users
 
 # Пример работы консольного варианта сервера
 ![image](https://user-images.githubusercontent.com/24436707/130615219-c94a2a84-839a-4b48-91bc-9ec7c038ecc5.png)
+![image](https://user-images.githubusercontent.com/24436707/130615397-498cfee2-c5ae-45d5-9c4e-675bf528c347.png)
+
 Консольный вариант сервера запускается через терминал следующим образом, вызвать терминал в дериктории .jar файла, ввести java -jar ServerCLI.jar.
 
 
