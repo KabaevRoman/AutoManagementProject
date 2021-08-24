@@ -139,5 +139,5 @@ ALTER TABLE public.users
 ![image](https://user-images.githubusercontent.com/24436707/130610400-21344377-f82d-46e2-b8a7-e828434fd7ad.png)
 *ошибка в случае подключения с использованием некорректных данных/либо при отключении сервера(идентичная ошибка существует у пользовательского сервера)*
 ![image](https://user-images.githubusercontent.com/24436707/130610596-e18b2794-6809-4556-92d7-fe7a14b04dd9.png)
-
+Все настройки сохраняются в .txt файлы с названиями ServerSettings, ClientSettings, AdminSettings. Файл появляется в директории приложения.
 
