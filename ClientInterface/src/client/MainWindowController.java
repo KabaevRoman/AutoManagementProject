@@ -24,10 +24,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.ResourceBundle;
-import java.util.Scanner;
+import java.util.*;
 
 import static java.lang.System.exit;
 
@@ -152,7 +149,7 @@ public class MainWindowController implements Initializable {
                     try {
                         onStartAlert(1, "Заявка одобрена!",
                                 "Как только вы вернетесь на рабочее место," +
-                                        " нажмите клавишу ок, это зафиксирует время прибытия\nНомер вашей машины: ");
+                                        " нажмите клавишу закончить поездку, это зафиксирует время прибытия\nНомер вашей машины: ");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -248,26 +245,43 @@ public class MainWindowController implements Initializable {
     public void onStartAlert(int code, String title, String contentText) throws IOException {
         new AudioClip(Objects.requireNonNull(MainWindowController.class.getResource("/notification.wav")).toString()).play();
         if (code == 1) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText(null);
-            alert.setTitle(title);
-            alert.setContentText(contentText + gos_num);
-            alert.initModality(Modality.APPLICATION_MODAL);
+//            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+//            alert.setHeaderText(null);
+//            alert.setTitle(title);
+//            alert.setContentText(contentText + gos_num);
+//            alert.initModality(Modality.APPLICATION_MODAL);
             Stage stage = (Stage) summaryTable.getScene().getWindow();
             stage.hide();
-            alert.showAndWait();
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
-            LocalDateTime now = LocalDateTime.now();
-            ServiceMsg serviceMsg = new ServiceMsg();
-            serviceMsg.command = "#FREEAUTO";
-            serviceMsg.parameters.put("returnTime", dtf.format(now));
-            sendMsg(serviceMsg);
-            System.out.println(dtf.format(now));
-            try {
-                shutdown(false);
-            } catch (IOException | InterruptedException ex) {
-                ex.printStackTrace();
+            ButtonType finish = new ButtonType("Закончить поездку", ButtonBar.ButtonData.OK_DONE);
+            ButtonType close = new ButtonType("Закрыть", ButtonBar.ButtonData.CANCEL_CLOSE);
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, contentText + gos_num, finish, close);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.initModality(Modality.APPLICATION_MODAL);
+            Optional<ButtonType> option = alert.showAndWait();
+            if (option.get() == finish) {
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+                LocalDateTime now = LocalDateTime.now();
+                ServiceMsg serviceMsg = new ServiceMsg();
+                serviceMsg.command = "#FREEAUTO";
+                serviceMsg.parameters.put("returnTime", dtf.format(now));
+                sendMsg(serviceMsg);
+                System.out.println(dtf.format(now));
+                try {
+                    shutdown(false);
+                } catch (IOException | InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            } else {
+                try {
+                    shutdown(false);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
             }
+
+
         } else if (code == 2) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setHeaderText(null);

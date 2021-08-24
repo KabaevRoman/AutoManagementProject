@@ -8,9 +8,21 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="lib1" level="project" />
-    <orderEntry type="library" name="lib3" level="project" />
-    <orderEntry type="library" name="lib" level="project" />
-    <orderEntry type="library" name="lib2" level="project" />
+    <orderEntry type="module-library">
+      <library name="javafx-fxml">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/javafx-fxml-11.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-fxml-11-win.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-controls-11.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-controls-11-win.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-graphics-11.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-graphics-11-win.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-base-11.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javafx-base-11-win.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
