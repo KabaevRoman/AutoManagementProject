@@ -8,7 +8,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
-import msg.AdminMsg;
 import msg.ServiceMsg;
 import msg.UserInfo;
 import table.VehicleTable;
@@ -18,7 +17,6 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.Scanner;
 
 public class    RegNumMaintenanceController implements Initializable {
     enum btnType {
@@ -79,7 +77,6 @@ public class    RegNumMaintenanceController implements Initializable {
                 sendMsg(serviceMsg);
                 break;
         }
-        //sendMsg(state);
         updateTableData();
     }
 
@@ -205,7 +202,7 @@ public class    RegNumMaintenanceController implements Initializable {
         objectOutputStream.flush();
     }
 
-    public void setSettings() throws IOException {
+    public void getSettings() throws IOException {
         Settings settings = new Settings();
         settings.getSettings();
         serverPort = settings.getServerPort();
@@ -242,7 +239,7 @@ public class    RegNumMaintenanceController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
-            setSettings();
+            getSettings();
             initClient();
             formTable();
             updateTableData();

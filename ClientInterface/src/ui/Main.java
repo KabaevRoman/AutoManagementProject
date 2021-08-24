@@ -9,13 +9,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Objects;
 
 
 public class Main extends Application {
@@ -24,8 +22,6 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/MainWindow.fxml"));
         Parent root = loader.load();
         stage.setTitle("Клиент");
-        Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/logo.jpg")));
-        stage.getIcons().add(icon);
         stage.setScene(new Scene(root, 1156, 700));
         MainWindowController controller = loader.getController();
 

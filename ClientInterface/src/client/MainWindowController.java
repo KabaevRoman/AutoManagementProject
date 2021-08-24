@@ -4,6 +4,7 @@ import custom.Error.ErrorHandler;
 import javafx.fxml.FXML;
 import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
+import msg.ScreenLock;
 import msg.UserMsg;
 import msg.ServiceMsg;
 import table.SummaryTable;
@@ -73,7 +74,7 @@ public class MainWindowController implements Initializable {
     private Socket clientSocket;
     private ObjectInputStream objectInputStream;
     private ObjectOutputStream objectOutputStream;
-    private int lock = 0;//1-accepted,2-refused
+    private ScreenLock lock = ScreenLock.UNLOCKED;
     private boolean busy;
     private String gos_num;
     private String username;
@@ -98,11 +99,13 @@ public class MainWindowController implements Initializable {
             while (running) {
                 try {
                     UserMsg userMsg = (UserMsg) objectInputStream.readObject();
-                    System.out.println(userMsg);
+                    System.out.println(userMsg.getLock());
+                    System.out.println(userMsg.getRegNum());
+                    System.out.println(userMsg.getNumOfCars());
                     lock = userMsg.getLock();
                     numOfCars = userMsg.getNumOfCars();
                     gos_num = userMsg.getRegNum();
-                    arrayList = (ArrayList<SummaryTable>) objectInputStream.readObject();
+                    arrayList = userMsg.getSummaryTable();
                     System.out.println(arrayList);
                     updateTableData();
                 } catch (IOException | ClassNotFoundException e) {
@@ -144,7 +147,7 @@ public class MainWindowController implements Initializable {
         Platform.runLater(() -> displayNumOfCars.setText(String.valueOf(numOfCars)));
         Platform.runLater(() -> summaryTable.setItems(FXCollections.observableArrayList(arrayList)));
         switch (lock) {
-            case 1:
+            case LOCKED_APPROVED:
                 Platform.runLater(() -> {
                     try {
                         onStartAlert(1, "Заявка одобрена!",
@@ -155,7 +158,7 @@ public class MainWindowController implements Initializable {
                     }
                 });
                 break;
-            case 2:
+            case LOCKED_DISMISSED:
                 Platform.runLater(() -> {
                     try {
                         onStartAlert(2, "Заявка не одобрена!",

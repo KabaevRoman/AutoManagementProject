@@ -13,7 +13,8 @@ public class ArchiveTable implements Serializable {
     private String arriveTime;
 
 
-    public ArchiveTable(String id, String idSum, String name, String departureTime, String PDO, String note, String gosNum, String arriveTime) {
+    public ArchiveTable(String id, String idSum, String name,
+                        String departureTime, String PDO, String note, String gosNum, String arriveTime) {
         this.id = id;
         this.idSum = idSum;
         this.name = name;

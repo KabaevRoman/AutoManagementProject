@@ -1,8 +1,10 @@
 package server;
 
+import msg.ScreenLock;
 import msg.UserMsg;
 import msg.ServiceMsg;
 import table.SummaryTable;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -19,7 +21,8 @@ public class UserHandler implements Runnable {
     private boolean running = true;
     private boolean saveToggled;
     private String username;
-    private int lock;
+    private String gos_num;
+    private ScreenLock lock;
     private String id;
 
 
@@ -37,12 +40,16 @@ public class UserHandler implements Runnable {
         }
     }
 
-    public void setLock(int lock) {
+    public void setLock(ScreenLock lock) {
         this.lock = lock;
     }
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public void setGos_num(String gos_num) {
+        this.gos_num = gos_num;
     }
 
     @Override
@@ -72,7 +79,7 @@ public class UserHandler implements Runnable {
                             if (saveToggled) {
                                 saveToArchive();
                             }
-                            server.lock.remove(username);
+                            server.userMetaData.remove(username);
                             server.sendTableToAllClients(false);
                             break;
                         }
@@ -80,7 +87,7 @@ public class UserHandler implements Runnable {
                             if (saveToggled) {
                                 saveToArchive();
                             }
-                            server.lock.remove(username);
+                            server.userMetaData.remove(username);
                             server.sendTableToAllClients(false);
                             break;
                         case "#FORCEQUIT":
@@ -88,9 +95,9 @@ public class UserHandler implements Runnable {
                         case "##session##end##":
                             this.close();
                             break;
-                        case "#GOSNUM":
-                            sendRegNum();
-                            break;
+//                        case "#GOSNUM":
+//                            sendRegNum();
+//                            break;
                     }
                 }
             } catch (NullPointerException | SQLException | ClassNotFoundException | IOException ex) {
@@ -100,6 +107,7 @@ public class UserHandler implements Runnable {
     }
 
     //TODO проверить перезапуск сервера вроде с ним что-то не так
+
     private void saveReturnTime(String date) throws SQLException {
         System.out.println("UPDATE summary SET return_time =" + date + " WHERE id=" + id);
         try {
@@ -116,11 +124,6 @@ public class UserHandler implements Runnable {
                 "select gos_num from summary where id = " + "'" + id + "'");
         rs.next();
         return rs.getString("gos_num");
-    }
-
-    public void sendRegNum() throws SQLException, IOException {
-        String gos_num = getRegNum();
-        objectOutputStream.writeObject(gos_num);
     }
 
     public void saveToArchive() throws SQLException {
@@ -151,23 +154,11 @@ public class UserHandler implements Runnable {
         int numOfAvailableCars = 0;
         try {
             ResultSet rs = connection.createStatement().executeQuery("select count(*) from car_list where car_state = 1");
-            while (rs.next()) {
-                numOfAvailableCars = rs.getInt("count");
-            }
+            rs.next();
+            numOfAvailableCars = rs.getInt("count");
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-        String gos_num = "";
-        if (lock == 1) {
-            try {
-                gos_num = getRegNum();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        }
-        UserMsg userMsg = new UserMsg(lock, numOfAvailableCars, gos_num);
-        objectOutputStream.writeObject(userMsg);
-        objectOutputStream.flush();
         ArrayList<SummaryTable> arrayList = new ArrayList<>();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT*FROM summary");
@@ -184,7 +175,8 @@ public class UserHandler implements Runnable {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-        objectOutputStream.writeObject(arrayList);
+        UserMsg userMsg = new UserMsg(lock, numOfAvailableCars, gos_num, arrayList);
+        objectOutputStream.writeObject(userMsg);
         objectOutputStream.flush();
     }
 }

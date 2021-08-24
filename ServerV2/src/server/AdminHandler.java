@@ -1,6 +1,7 @@
 package server;
 
 import msg.AdminMsg;
+import msg.ScreenLock;
 import table.ArchiveTable;
 import msg.ServiceMsg;
 import table.SummaryTable;
@@ -40,24 +41,38 @@ public class AdminHandler implements Runnable {
                     System.out.println(serviceMsg.command);
                     switch (serviceMsg.command) {
                         case "#UPDATE": {
+                            String usernameUser = getUsername(serviceMsg.parameters.get("id"));
+                            String id = serviceMsg.parameters.get("id");
+                            String gos_num = serviceMsg.parameters.get("gos_num");
                             updateRecording(
-                                    serviceMsg.parameters.get("id"),
-                                    serviceMsg.parameters.get("gos_num"),
+                                    id,
+                                    gos_num,
                                     serviceMsg.parameters.get("departure_time"),
-                                    serviceMsg.parameters.get("pdo")
+                                    serviceMsg.parameters.get("pdo"),
+                                    usernameUser
                             );
-                            String username = getUsername(serviceMsg.parameters.get("id"));
                             if (serviceMsg.parameters.get("pdo").equals("Одобрено")) {
-                                server.userClients.get(username).setLock(1);
-                                server.lock.put(username, 1);
+                                if (server.userClients.containsKey(usernameUser)) {
+                                    server.userClients.get(usernameUser).setLock(ScreenLock.LOCKED_APPROVED);
+                                    server.userClients.get(usernameUser).setGos_num(gos_num);
+                                }
+                                server.userMetaData.put(usernameUser, new UserMetaData(ScreenLock.LOCKED_APPROVED));
                             } else if (serviceMsg.parameters.get("pdo").equals("Отказ")) {
-                                server.userClients.get(username).setLock(2);
-                                server.lock.put(username, 2);
+                                if (server.userClients.containsKey(usernameUser)) {
+                                    server.userClients.get(usernameUser).setLock(ScreenLock.LOCKED_DISMISSED);
+                                }
+                                server.userMetaData.put(usernameUser, new UserMetaData(ScreenLock.LOCKED_DISMISSED));
                             } else {
-                                server.userClients.get(username).setLock(0);
-                                server.lock.put(username, 0);
+                                if (server.userClients.containsKey(usernameUser)) {
+                                    server.userClients.get(usernameUser).setLock(ScreenLock.UNLOCKED);
+                                }
+                                server.userMetaData.put(usernameUser, new UserMetaData(ScreenLock.UNLOCKED));
                             }
-                            server.userClients.get(username).setId(serviceMsg.parameters.get("id"));
+                            if (server.userClients.containsKey(usernameUser)) {
+                                server.userClients.get(usernameUser).setId(serviceMsg.parameters.get("id"));
+                            }//TODO чекнуть нужен ли кусок ифа выше
+                            server.userMetaData.get(usernameUser).id = id;
+                            server.userMetaData.get(usernameUser).gos_num = gos_num;
                             server.sendTableToAllClients(false);
                             break;
                         }
@@ -127,11 +142,15 @@ public class AdminHandler implements Runnable {
         }
     }
 
+    public void metadataBackup(int lock, String id, String gos_num, String username) throws SQLException {
+        connection.createStatement().executeQuery("insert into user_meta_data values(" + lock + ",'" + id + "','" + gos_num + "','" + username + "'");
+    }
+
     private void emergencyUpdate(String id, String departure_time, String return_time,
                                  String pdo, String note, String gos_num) throws SQLException {
         System.out.println(departure_time);
         System.out.println(return_time);
-        if (return_time == null) {
+        if (return_time == null || return_time.equals("")) {
             connection.createStatement().executeUpdate("UPDATE summary SET departure_time = '" + departure_time +
                     "',gos_num='" + gos_num +
                     "',note='" + note +
@@ -227,7 +246,7 @@ public class AdminHandler implements Runnable {
                 .executeUpdate("UPDATE car_list SET car_state =" + state + " WHERE reg_num='" + reg_num + "'");
     }
 
-    public void updateRecording(String id, String reg_num, String departure_time, String pdo) throws SQLException {
+    public void updateRecording(String id, String reg_num, String departure_time, String pdo, String usernameUser) throws SQLException {
         System.out.println(reg_num);
         connection.createStatement()
                 .executeUpdate("UPDATE car_list SET car_state = 0 WHERE reg_num='" + reg_num + "'");
@@ -256,19 +275,27 @@ public class AdminHandler implements Runnable {
         objectOutputStream.flush();
     }
 
-
-    public void sendTable(boolean notify) throws IOException {
+    public ArrayList<String> getRegNumList() throws SQLException {
         ArrayList<String> carList = new ArrayList<>();
-        try {
-            ResultSet rs = connection.createStatement()
-                    .executeQuery("SELECT reg_num FROM car_list where car_state = 1");
-            while (rs.next()) {
-                carList.add(rs.getString("reg_num"));
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        ResultSet rs = connection.createStatement()
+                .executeQuery("SELECT reg_num FROM car_list where car_state = 1");
+        while (rs.next()) {
+            carList.add(rs.getString("reg_num"));
         }
-        System.out.println(carList);
+        return carList;
+    }
+
+    public String getRegNumById(String id) throws SQLException {
+        ResultSet rs = connection.createStatement().executeQuery(
+                "select gos_num from summary where id = " + "'" + id + "'");
+        rs.next();
+        return rs.getString("gos_num");
+    }
+
+
+    public void sendTable(boolean notify) throws IOException, SQLException {
+
+        ArrayList<String> carList = getRegNumList();
 
         ArrayList<SummaryTable> arrayList = new ArrayList<>();
         try {

@@ -12,7 +12,8 @@ public class SummaryTable implements Serializable {
     private String arriveTime;
 
 
-    public SummaryTable(String idSum, String name, String departureTime, String PDO, String note, String gosNum, String arriveTime) {
+    public SummaryTable(String idSum, String name, String departureTime,
+                        String PDO, String note, String gosNum, String arriveTime) {
         this.idSum = idSum;
         this.name = name;
         this.departureTime = departureTime;

@@ -1,17 +1,21 @@
 package msg;
 
+import table.SummaryTable;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class UserMsg implements Serializable {
-    private int lock;
+    private ScreenLock lock;
     private int numOfCars;
     private String regNum;
+    private ArrayList<SummaryTable> summaryTable;
 
-    public int getLock() {
+    public ScreenLock getLock() {
         return lock;
     }
 
-    public void setLock(int lock) {
+    public void setLock(ScreenLock lock) {
         this.lock = lock;
     }
 
@@ -31,9 +35,18 @@ public class UserMsg implements Serializable {
         this.regNum = regNum;
     }
 
-    public UserMsg(int lock, int numOfCars, String regNum) {
+    public ArrayList<SummaryTable> getSummaryTable() {
+        return summaryTable;
+    }
+
+    public void setSummaryTable(ArrayList<SummaryTable> summaryTable) {
+        this.summaryTable = summaryTable;
+    }
+
+    public UserMsg(ScreenLock lock, int numOfCars, String regNum, ArrayList<SummaryTable> summaryTable) {
         this.lock = lock;
         this.numOfCars = numOfCars;
         this.regNum = regNum;
+        this.summaryTable = summaryTable;
     }
 }

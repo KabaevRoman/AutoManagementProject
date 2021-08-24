@@ -1,6 +1,7 @@
 package server;
 
 import javafx.application.Platform;
+import msg.ScreenLock;
 import msg.UserInfo;
 import ui.Controller;
 
@@ -19,7 +20,7 @@ public class Server extends Thread {
     public Map<String, AdminHandler> adminClients;
     public Map<String, UserHandler> userClients;
     public Map<String, AdminHandler> maintenanceClients;
-    public Map<String, Integer> lock;
+    public Map<String, UserMetaData> userMetaData;
     private final ServerSocket serverSocket;
     private Socket clientSocket;
     private boolean running;
@@ -37,7 +38,7 @@ public class Server extends Thread {
         this.userClients = new HashMap<>();
         this.adminClients = new HashMap<>();
         this.maintenanceClients = new HashMap<>();
-        this.lock = new HashMap<>();
+        this.userMetaData = new HashMap<>();
         this.serverSocket = new ServerSocket(port);
         this.dbConnect = dbConnect;
         connection = dbConnect.getConnection();
@@ -54,12 +55,12 @@ public class Server extends Thread {
                     objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
                     objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
                     UserInfo userInfo = (UserInfo) objectInputStream.readObject();//1 - admin, 2 - user, 404 - not found
-                    System.out.println(userInfo.getUsername() + userInfo.getPassword());
+                    String username = userInfo.getUsername();
                     switch (userStatus(userInfo)) {
                         case 1:
                             AdminHandler admin = new AdminHandler(objectOutputStream, objectInputStream,
                                     this, dbConnect, userInfo.getUsername());
-                            adminClients.put(userInfo.getUsername(), admin);
+                            adminClients.put(username, admin);
                             new Thread(admin).start();
                             Platform.runLater(() -> controller.numOfAdminLabel
                                     .setText(String.valueOf(adminClients.size())));
@@ -67,14 +68,18 @@ public class Server extends Thread {
                             break;
                         case 0:
                             UserHandler user = new UserHandler(objectOutputStream, objectInputStream,
-                                    this, dbConnect, saveToggled, userInfo.getUsername());
-                            userClients.put(userInfo.getUsername(), user);
-                            if (!lock.containsKey(userInfo.getUsername())) {
-                                lock.put(userInfo.getUsername(), 0);
-                                user.setLock(0);
+                                    this, dbConnect, saveToggled, username);
+                            userClients.put(username, user);
+                            if (!userMetaData.containsKey(username)) {
+                                userMetaData.put(username, new UserMetaData(ScreenLock.UNLOCKED));
+                                user.setLock(ScreenLock.UNLOCKED);
                             } else {
-                                int lockState = lock.get(userInfo.getUsername());
+                                String id = userMetaData.get(username).id;
+                                String gos_num = userMetaData.get(username).gos_num;
+                                ScreenLock lockState = userMetaData.get(userInfo.getUsername()).lock;
                                 user.setLock(lockState);
+                                user.setGos_num(gos_num);
+                                user.setId(id);
                             }
                             new Thread(user).start();
                             Platform.runLater(() -> controller.numOfClientsLabel
@@ -129,7 +134,7 @@ public class Server extends Thread {
         }
     }
 
-    public void sendTableToAllClients(boolean notifyAdmin) throws IOException {
+    public void sendTableToAllClients(boolean notifyAdmin) throws IOException, SQLException {
         for (Map.Entry<String, UserHandler> client : userClients.entrySet()) {
             client.getValue().sendTable();
         }
@@ -141,6 +146,7 @@ public class Server extends Thread {
     public void resetData() throws SQLException {
         connection.createStatement().executeUpdate("TRUNCATE TABLE summary");
     }
+
 
     public int userStatus(UserInfo userInfo) throws SQLException {
         //делаем запрос в юзерс и если во первых юзер есть пароль равен и получаем статус
