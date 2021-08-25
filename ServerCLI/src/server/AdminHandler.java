@@ -204,8 +204,9 @@ public class AdminHandler implements Runnable {
                 "INSERT INTO car_list(reg_num,car_state) VALUES('" + reg_num + "'," + "'" + state + "')");
     }
 
-    public void close(boolean maintenance) throws IOException {
+    public void close(boolean maintenance) throws IOException, SQLException {
         running = false;
+         connection.close();
         objectInputStream.close();
         objectOutputStream.close();
         if (maintenance) {
@@ -238,7 +239,6 @@ public class AdminHandler implements Runnable {
         objectOutputStream.flush();
     }
 
-    //TODO сделать так чтобы когда ретюрн нулл в редакторе то он съедал
     public void updateRegNum(String reg_num, String state) throws SQLException {
         System.out.println(reg_num);
         System.out.println(state);

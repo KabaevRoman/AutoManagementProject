@@ -2,7 +2,10 @@ package client;
 
 import custom.Error.ErrorHandler;
 import javafx.fxml.FXML;
-import javafx.scene.media.AudioClip;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import msg.ScreenLock;
 import msg.UserMsg;
@@ -18,6 +21,8 @@ import javafx.stage.Modality;
 import javafx.util.converter.DateTimeStringConverter;
 import msg.UserInfo;
 
+import javax.sound.sampled.*;
+import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
@@ -28,7 +33,6 @@ import java.util.*;
 
 import static java.lang.System.exit;
 
-//TODO при перезапуске тоже сделать чтобы отправлялся форс квит
 public class MainWindowController implements Initializable {
     @FXML
     public TableView<SummaryTable> summaryTable;
@@ -150,7 +154,7 @@ public class MainWindowController implements Initializable {
                         onStartAlert(1, "Заявка одобрена!",
                                 "Как только вы вернетесь на рабочее место," +
                                         " нажмите клавишу закончить поездку, это зафиксирует время прибытия\nНомер вашей машины: ");
-                    } catch (IOException e) {
+                    } catch (IOException | UnsupportedAudioFileException | LineUnavailableException e) {
                         e.printStackTrace();
                     }
                 });
@@ -160,7 +164,7 @@ public class MainWindowController implements Initializable {
                     try {
                         onStartAlert(2, "Заявка не одобрена!",
                                 "Нажмите OK чтобы закрыть программу");
-                    } catch (IOException e) {
+                    } catch (IOException | UnsupportedAudioFileException | LineUnavailableException e) {
                         e.printStackTrace();
                     }
                 });
@@ -242,8 +246,8 @@ public class MainWindowController implements Initializable {
         });
     }
 
-    public void onStartAlert(int code, String title, String contentText) throws IOException {
-        new AudioClip(Objects.requireNonNull(MainWindowController.class.getResource("/notification.wav")).toString()).play();
+    public void onStartAlert(int code, String title, String contentText) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
+        Toolkit.getDefaultToolkit().beep();
         if (code == 1) {
 //            Alert alert = new Alert(Alert.AlertType.INFORMATION);
 //            alert.setHeaderText(null);

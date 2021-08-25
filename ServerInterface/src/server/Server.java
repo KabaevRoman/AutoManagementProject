@@ -52,6 +52,8 @@ public class Server extends Thread {
                 clientSocket = serverSocket.accept();
                 //ОТДЕЛЬНЫЙ ПОТОК ??
                 try {
+                    objectOutputStream = null;
+                    objectInputStream = null;
                     objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
                     objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
                     UserInfo userInfo = (UserInfo) objectInputStream.readObject();//1 - admin, 2 - user, 404 - not found
@@ -107,8 +109,6 @@ public class Server extends Thread {
         }
     }
 
-    //TODO показывать количество пользователей и админов через сервак а не хендлеры
-    //TODO можно разнести maintenance и admin;
     public void removeClient(String username) {
         if (userClients.containsKey(username)) {
             userClients.remove(username);

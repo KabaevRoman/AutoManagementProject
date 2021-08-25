@@ -106,8 +106,6 @@ public class UserHandler implements Runnable {
         }
     }
 
-    //TODO проверить перезапуск сервера вроде с ним что-то не так
-
     private void saveReturnTime(String date) throws SQLException {
         System.out.println("UPDATE summary SET return_time =" + date + " WHERE id=" + id);
         try {
@@ -132,7 +130,8 @@ public class UserHandler implements Runnable {
                         "SELECT id,fio,departure_time,car_status,return_time,pdo, note,gos_num from summary WHERE id=" + id);
     }
 
-    public void close() throws IOException {
+    public void close() throws IOException, SQLException {
+        connection.close();
         running = false;
         server.removeClient(username);
         objectInputStream.close();

@@ -6,6 +6,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -17,10 +19,9 @@ import msg.ServiceMsg;
 import msg.UserInfo;
 import table.SummaryTable;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import javax.sound.sampled.*;
+import java.awt.*;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
@@ -104,15 +105,13 @@ public class MainWindowController implements Initializable {
                             "администратору чтобы узнать статус сервера");
             return;
         }
-        //TODO кнопка переподключения сломалась к хуям
         new Thread(() -> {
             try {
                 while (running) {
                     try {
                         AdminMsg adminMsg = (AdminMsg) objectInputStream.readObject();
                         if (adminMsg.notify) {
-                            new AudioClip(Objects.requireNonNull(MainWindowController.class
-                                    .getResource("/notification.wav")).toString()).play();
+                            Toolkit.getDefaultToolkit().beep();
                         }
                         carList = adminMsg.carList;
                         pendingApprovalList = adminMsg.arrayList;

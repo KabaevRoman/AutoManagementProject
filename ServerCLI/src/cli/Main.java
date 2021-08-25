@@ -6,7 +6,6 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws IOException, SQLException {
-
         boolean running = true;
         Scanner sc = new Scanner(System.in);
         Controller controller = new Controller();
@@ -72,6 +71,7 @@ public class Main {
                 }
                 case "saveoff": {
                     controller.server.toggleSaveMode(false);
+                    break;
                 }
                 case "stop": {
                     controller.closeProgram();

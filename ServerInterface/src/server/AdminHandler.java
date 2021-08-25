@@ -238,7 +238,6 @@ public class AdminHandler implements Runnable {
         objectOutputStream.flush();
     }
 
-    //TODO сделать так чтобы когда ретюрн нулл в редакторе то он съедал
     public void updateRegNum(String reg_num, String state) throws SQLException {
         System.out.println(reg_num);
         System.out.println(state);
