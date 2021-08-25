@@ -26,26 +26,26 @@
     <top>
         <Pane fx:id="headerPane" prefHeight="32.0" prefWidth="1158.0" styleClass="titleBar" stylesheets="@style.css" BorderPane.alignment="CENTER">
             <children>
-            <MenuBar layoutX="-9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="1167.0" stylesheets="@style.css">
-              <menus>
-                <Menu mnemonicParsing="false" text="Файл">
-                  <items>
-                    <MenuItem fx:id="settingsBtn" mnemonicParsing="false" text="Настройки" />
-                        <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Переподключиться" />
-                        <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Редактор гос. номеров" />
-                        <MenuItem fx:id="archiveBtn" mnemonicParsing="false" text="Архив" />
-                        <MenuItem fx:id="updateBtn" mnemonicParsing="false" text="Обновить" />
-                  </items>
-                </Menu>
-                  <Menu mnemonicParsing="false" text="Экстренные настройки">
-                    <items>
-                      <MenuItem fx:id="resetDatabaseBtn" mnemonicParsing="false" text="Сброс данных в таблице" />
-                        <MenuItem fx:id="resetVehicleStateBtn" mnemonicParsing="false" text="Сброс состояния гос. номеров" />
-                        <MenuItem fx:id="editDatabaseBtn" mnemonicParsing="false" text="Редактировать БД" />
-                    </items>
-                  </Menu>
-              </menus>
-            </MenuBar>
+                <MenuBar layoutX="-9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="32.0" prefWidth="1167.0" stylesheets="@style.css">
+                    <menus>
+                        <Menu mnemonicParsing="false" text="Файл">
+                            <items>
+                                <MenuItem fx:id="settingsBtn" mnemonicParsing="false" text="Настройки" />
+                                <MenuItem fx:id="reconnectBtn" mnemonicParsing="false" text="Переподключиться" />
+                                <MenuItem fx:id="editRegNumBtn" mnemonicParsing="false" text="Редактор гос. номеров" />
+                                <MenuItem fx:id="archiveBtn" mnemonicParsing="false" text="Архив" />
+                                <MenuItem fx:id="updateBtn" mnemonicParsing="false" text="Обновить" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Экстренные настройки">
+                            <items>
+                                <MenuItem fx:id="resetDatabaseBtn" mnemonicParsing="false" text="Сброс данных в таблице" />
+                                <MenuItem fx:id="resetVehicleStateBtn" mnemonicParsing="false" text="Сброс состояния гос. номеров" />
+                                <MenuItem fx:id="editDatabaseBtn" mnemonicParsing="false" text="Редактировать БД" />
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
             </children>
         </Pane>
     </top>
