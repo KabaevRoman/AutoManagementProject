@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/AdminInterface/AdminInterface.iml" filepath="$PROJECT_DIR$/AdminInterface/AdminInterface.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ClientInterface/ClientInterface.iml" filepath="$PROJECT_DIR$/ClientInterface/ClientInterface.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ServerCLI/ServerCLI.iml" filepath="$PROJECT_DIR$/ServerCLI/ServerCLI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ServerInterface/ServerInterface.iml" filepath="$PROJECT_DIR$/ServerInterface/ServerInterface.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/VehicleManagementProject.iml" filepath="$PROJECT_DIR$/.idea/VehicleManagementProject.iml" />
+    </modules>
+  </component>
+</project>
