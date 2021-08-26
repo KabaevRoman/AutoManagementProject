@@ -49,7 +49,6 @@ public class Server extends Thread {
             try {
                 clientSocket = serverSocket.accept();
                 new Thread(new UserSeparator(clientSocket, connection, this, dbConnect)).start();
-                //TODO мб придется оборачивать в отдельный поток
             } catch (IOException e) {
                 e.printStackTrace();
             }

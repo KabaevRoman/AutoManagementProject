@@ -23,11 +23,9 @@ public class Server extends Thread {
     private final ServerSocket serverSocket;
     private Socket clientSocket;
     private boolean running;
-    private ObjectInputStream objectInputStream;
-    private ObjectOutputStream objectOutputStream;
 
     private final DBConnect dbConnect;
-    private boolean saveToggled = true;
+    public boolean saveToggled = true;
     private Connection connection;
     public Controller controller;
 
@@ -49,57 +47,7 @@ public class Server extends Thread {
         while (running) {
             try {
                 clientSocket = serverSocket.accept();
-                //ОТДЕЛЬНЫЙ ПОТОК ??
-                try {
-                    objectInputStream = null;
-                    objectOutputStream = null;
-                    objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-                    objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-                    UserInfo userInfo = (UserInfo) objectInputStream.readObject();//1 - admin, 2 - user, 404 - not found
-                    String username = userInfo.getUsername();
-                    switch (userStatus(userInfo)) {
-                        case 1:
-                            AdminHandler admin = new AdminHandler(objectOutputStream, objectInputStream,
-                                    this, dbConnect, userInfo.getUsername());
-                            adminClients.put(username, admin);
-                            System.out.println("Количество администраторов:" + adminClients.size());
-                            System.out.println("Админы: " + adminClients);
-                            new Thread(admin).start();
-                            break;
-                        case 0:
-                            UserHandler user = new UserHandler(objectOutputStream, objectInputStream,
-                                    this, dbConnect, saveToggled, username);
-                            userClients.put(username, user);
-                            if (!userMetaData.containsKey(username)) {
-                                userMetaData.put(username, new UserMetaData(ScreenLock.UNLOCKED));
-                                user.setLock(ScreenLock.UNLOCKED);
-                            } else {
-                                String id = userMetaData.get(username).id;
-                                String gos_num = userMetaData.get(username).gos_num;
-                                ScreenLock lockState = userMetaData.get(userInfo.getUsername()).lock;
-                                user.setLock(lockState);
-                                user.setGos_num(gos_num);
-                                user.setId(id);
-                            }
-                            new Thread(user).start();
-                            System.out.println("Количество клиентов:" + userClients.size());
-                            System.out.println("Клиенты: " + userClients);
-                            break;
-                        case 2:
-                            AdminHandler maintenance = new AdminHandler(objectOutputStream, objectInputStream,
-                                    this, dbConnect, userInfo.getUsername());
-                            maintenanceClients.put(userInfo.getUsername(), maintenance);
-                            System.out.println("Обслуживание:" + maintenanceClients);
-                            new Thread(maintenance).start();
-                            break;
-                        case 404:
-                            clientSocket.close();
-                            break;
-                    }
-                } catch (IOException | ClassNotFoundException | SQLException e) {
-                    e.printStackTrace();
-                }
-                //TODO мб придется оборачивать в отдельный поток
+                new Thread(new UserSeparator(clientSocket, connection, this, dbConnect)).start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -123,7 +71,6 @@ public class Server extends Thread {
             userClients.clear();
             serverSocket.close();
             clientSocket.close();
-            objectInputStream.close();
         } catch (NullPointerException ex) {
             ex.printStackTrace();
         }

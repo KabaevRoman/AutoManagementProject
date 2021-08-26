@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Исполняемые файлы">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Исполняемые файлы/AdminInterface.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Исполняемые файлы/ServerInterface.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Исполняемые файлы/ServerCLI.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Исполняемые файлы/ClientInterface.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
